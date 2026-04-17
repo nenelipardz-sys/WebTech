@@ -1,0 +1,47 @@
+[
+  {
+    "id": "arizza",
+    "name": "Arizza L. Villareal",
+    "role": "Frontend Designer",
+    "image": "assets/team-profile-img.png",
+    "about": "Driven by continuous growth and learning, with a focus on building reliable and structured front-end implementations.",
+    "skills": ["UI Design", "HTML", "CSS"],
+    "contribution": "Led the visual design direction, creating the overall aesthetic and component designs that define Rizze Beauty's luxurious look and feel."
+  },
+  {
+    "id": "maverick",
+    "name": "Maverick S. Moran",
+    "role": "Programmer",
+    "image": "assets/team-profile-img%20%281%29.png",
+    "about": "Driven by continuous growth and learning, with a focus on building reliable and structured front-end implementations.",
+    "skills": ["HTML", "CSS"],
+    "contribution": "Implemented the responsive layouts and styled components, translating design mockups into functional, pixel-perfect code."
+  },
+  {
+    "id": "erika",
+    "name": "Erika P. Bianan",
+    "role": "Editor",
+    "image": "assets/team-member-img.png",
+    "about": "Detail-oriented and focused on refining outputs to ensure clarity, consistency, and overall quality of the project.",
+    "skills": ["JSON", "UI Design"],
+    "contribution": "Ensured content consistency across all pages, refined copy, and maintained quality standards throughout the project lifecycle."
+  },
+  {
+    "id": "justin",
+    "name": "Justin Luis C. Gamoso",
+    "role": "Editor",
+    "image": "assets/team-profile-img%20%282%29.png",
+    "about": "Provides direction and coordination for the team, ensuring smooth collaboration and steady progress throughout the project.",
+    "skills": ["HTML"],
+    "contribution": "Coordinated team efforts, set project milestones, and ensured deliverables met quality and timeline expectations."
+  },
+  {
+    "id": "johnley",
+    "name": "Johnley T. Jugo",
+    "role": "Frontend Designer",
+    "image": "assets/team-profile-img%20%283%29.png",
+    "about": "Dedicated to continuous learning and improvement, contributing to both the design and development aspects of the project.",
+    "skills": ["JavaScript", "UI/UX"],
+    "contribution": "Contributed to design refinements and development support, bridging the gap between visual design and technical implementation."
+  }
+]

@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rizze Beauty | Checkout</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css?v=20260417b" />
+</head>
+<body data-page="checkout">
+    <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="index.html" aria-label="Rizze Home"><img class="brand-logo" src="assets/logo%20(1).png" alt="Rizze logo" /></a>
+      <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation">Menu</button>
+      <nav class="site-nav" id="site-nav">
+        <a href="index.html">Home</a>
+        <a href="products.html">Shop</a>
+        <a href="about.html">About</a>
+      </nav>
+      <div class="nav-icons">
+        <a href="orders.html" class="nav-icon" title="Orders"><img class="nav-icon-img" src="assets/package.png" alt="Orders" /><span class="cart-badge" id="orders-count">0</span></a>
+        <a href="cart.html" class="nav-icon" title="Cart"><img class="nav-icon-img" src="assets/shopping-bag-01.png" alt="Cart" /><span class="cart-badge" id="cart-count">0</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main class="section checkout-main">
+    <div class="container">
+      <a class="back-link" href="cart.html">← Back to Cart</a>
+      <h1 class="page-title">Checkout</h1>
+
+      <div class="checkout-layout">
+        <form id="checkout-form" class="checkout-form">
+          <h3>Contact Information</h3>
+          <div class="grid-2">
+            <label>First Name<input required type="text" /></label>
+            <label>Last Name<input required type="text" /></label>
+          </div>
+          <label>Email Address<input required type="email" /></label>
+          <label>Phone<input required type="tel" /></label>
+
+          <h3>Shipping Address</h3>
+          <label>Address<input required type="text" /></label>
+          <div class="grid-3">
+            <label>City<input required type="text" /></label>
+            <label>Province<input required type="text" /></label>
+            <label>Zip Code<input required type="text" /></label>
+          </div>
+
+          <h3>Payment Method</h3>
+          <div class="payment-options" id="payment-options">
+            <button class="payment-option active" type="button" data-payment="card">
+              <strong>Pay via Card</strong>
+              <span>Debit or Credit Card</span>
+            </button>
+            <button class="payment-option" type="button" data-payment="cod">
+              <strong>Cash on Delivery</strong>
+              <span>Pay when you receive</span>
+            </button>
+          </div>
+
+          <div id="card-fields">
+            <label>Card Number<input type="text" placeholder="1234 5678 9876 5432" /></label>
+            <div class="grid-2">
+              <label>Expiry Date<input type="text" placeholder="MM/YY" /></label>
+              <label>CVV<input type="text" placeholder="123" /></label>
+            </div>
+          </div>
+
+          <button class="btn btn-dark full" id="pay-now-btn" type="submit">Pay Now - P 0.00</button>
+        </form>
+
+        <aside class="order-summary-card" id="checkout-summary"></aside>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand footer-brand" href="index.html" aria-label="Rizze Home"><img class="footer-logo" src="assets/logo%20(1).png" alt="Rizze logo" /></a>
+        <p>Timeless beauty, redefined. Premium skincare and makeup for effortless sophistication.</p>
+      </div>
+      <div>
+        <h4>Shop</h4>
+        <a href="products.html">All Products</a>
+        <a href="products-skincare.html">Skincare</a>
+        <a href="products-makeup.html">Makeup</a>
+        <a href="products-fragrance.html">Fragrance</a>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <a href="about.html">About us</a>
+      </div>
+      <div>
+        <h4>Newsletter</h4>
+        <p>Join for exclusive offers and beauty tips.</p>
+        <form class="newsletter-form">
+          <input type="email" placeholder="your@email.com" />
+          <button type="button">Join</button>
+        </form>
+      </div>
+    </div>
+    <div class="copyright">© 2026 Rizzé Beauty. All rights reserved. Crafted with elegance.</div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+  <script defer src="js/app.js?v=20260417b"></script>
+</body>
+</html>
+
+
+
+
