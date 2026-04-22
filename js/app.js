@@ -741,7 +741,7 @@ function getFallbackProducts() {
       name: "Necessaire Body Lotion",
       category: "skincare",
       price: 199,
-      image: "assets/best-seller-card-1.png",
+      image: "assets/Rectangle%203%20%281%29.png",
       description: "Hydrating daily lotion that leaves skin smooth and visibly refreshed.",
       badge: "best",
       bestSeller: true,
@@ -752,10 +752,87 @@ function getFallbackProducts() {
       name: "Narcisi Parfum",
       category: "fragrance",
       price: 499,
-      image: "assets/best-seller-card-4.png",
+      image: "assets/Rectangle%206%20%281%29.png",
       description: "A clean floral fragrance layered with warm woody notes.",
       badge: "best",
       bestSeller: true,
+      newArrival: false
+    },
+    {
+      id: "p4",
+      name: "Bene Tint",
+      category: "makeup",
+      price: 199,
+      image: "assets/Rectangle%205.png",
+      description: "Lightweight tint for cheeks and lips with natural blendable color.",
+      badge: "new",
+      bestSeller: false,
+      newArrival: true
+    },
+    {
+      id: "p5",
+      name: "Bigglow Combo",
+      category: "skincare",
+      price: 399,
+      image: "assets/Rectangle%204%20%281%29.png",
+      description: "A brightening pair formulated to revive dull and tired skin.",
+      badge: "best",
+      bestSeller: true,
+      newArrival: false
+    },
+    {
+      id: "p6",
+      name: "Second Sign Toner",
+      category: "skincare",
+      price: 499,
+      image: "assets/Rectangle%203.png",
+      description: "Balancing toner that preps skin for better moisture absorption.",
+      badge: "new",
+      bestSeller: false,
+      newArrival: true
+    },
+    {
+      id: "p7",
+      name: "Naturliches Hazel Serum",
+      category: "skincare",
+      price: 249,
+      image: "assets/Rectangle%205%20%281%29.png",
+      description: "Clarifying serum with witch hazel and soothing botanical extracts.",
+      badge: "best",
+      bestSeller: true,
+      newArrival: false
+    },
+    {
+      id: "p8",
+      name: "Blank Anti-aging Serum",
+      category: "skincare",
+      price: 499,
+      image: "assets/Rectangle%206.png",
+      description: "Restorative serum that helps soften lines and boost skin bounce.",
+      badge: "new",
+      bestSeller: false,
+      newArrival: true
+    },
+    {
+      id: "p9",
+      name: "Peachy Parfum",
+      category: "fragrance",
+      price: 999,
+      image: "assets/Rectangle%206%20%283%29.png",
+      description: "Velvety peach scent with fresh citrus top notes.",
+      badge: "",
+      bestSeller: false,
+      newArrival: false
+    },
+    {
+      id: "p10",
+      name: "Lumin Set",
+      category: "makeup",
+      price: 1999,
+      image: "assets/Rectangle%206%20%282%29.png",
+      description: "Complete makeup set designed for day-to-night polished looks.",
+      badge: "",
+      bestSeller: false,
       newArrival: false
     }
   ];
@@ -767,10 +844,46 @@ function getFallbackTeam() {
       id: "arizza",
       name: "Arizza L. Villareal",
       role: "Frontend Designer",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80",
+      image: "assets/team-profile-img.png",
       about: "Driven by continuous growth and learning, with a focus on building reliable and structured front-end implementations.",
-      skills: ["UI Design"],
+      skills: ["UI Design", "HTML", "CSS"],
       contribution: "Led the visual design direction, creating the overall aesthetic and component designs that define Rizze Beauty's luxurious look and feel."
+    },
+    {
+      id: "maverick",
+      name: "Maverick S. Moran",
+      role: "Programmer",
+      image: "assets/team-profile-img%20%281%29.png",
+      about: "Driven by continuous growth and learning, with a focus on building reliable and structured front-end implementations.",
+      skills: ["HTML", "CSS"],
+      contribution: "Implemented the responsive layouts and styled components, translating design mockups into functional, pixel-perfect code."
+    },
+    {
+      id: "erika",
+      name: "Erika P. Bianan",
+      role: "Editor",
+      image: "assets/team-member-img.png",
+      about: "Detail-oriented and focused on refining outputs to ensure clarity, consistency, and overall quality of the project.",
+      skills: ["JSON", "UI Design"],
+      contribution: "Ensured content consistency across all pages, refined copy, and maintained quality standards throughout the project lifecycle."
+    },
+    {
+      id: "justin",
+      name: "Justin Luis C. Gamoso",
+      role: "Editor",
+      image: "assets/team-profile-img%20%282%29.png",
+      about: "Provides direction and coordination for the team, ensuring smooth collaboration and steady progress throughout the project.",
+      skills: ["HTML"],
+      contribution: "Coordinated team efforts, set project milestones, and ensured deliverables met quality and timeline expectations."
+    },
+    {
+      id: "johnley",
+      name: "Johnley T. Jugo",
+      role: "Frontend Designer",
+      image: "assets/team-profile-img%20%283%29.png",
+      about: "Dedicated to continuous learning and improvement, contributing to both the design and development aspects of the project.",
+      skills: ["JavaScript", "UI/UX"],
+      contribution: "Contributed to design refinements and development support, bridging the gap between visual design and technical implementation."
     }
   ];
 }
