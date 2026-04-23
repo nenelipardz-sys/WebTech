@@ -616,6 +616,16 @@ function renderMemberProfile() {
     return;
   }
 
+  const skillTagsMarkup = member.skills
+    .map((skill) => {
+      const link = member.skillLinks && member.skillLinks[skill];
+      if (!link) {
+        return `<span>${skill}</span>`;
+      }
+      return `<a href="${link}" target="_blank" rel="noopener noreferrer">${skill}</a>`;
+    })
+    .join("");
+
   wrap.innerHTML = `
     <section class="profile-box">
       <a class="back-link" href="about.html">← Back to Team</a>
@@ -636,7 +646,7 @@ function renderMemberProfile() {
       <div class="profile-block">
         <h3>Skills</h3>
         <div class="skill-tags">
-          ${member.skills.map((skill) => `<span>${skill}</span>`).join("")}
+          ${skillTagsMarkup}
         </div>
       </div>
 
@@ -845,8 +855,13 @@ function getFallbackTeam() {
       name: "Arizza L. Villareal",
       role: "Frontend Designer",
       image: "assets/team-profile-img.png",
-      about: "Driven by continuous growth and learning, with a focus on building reliable and structured front-end implementations.",
-      skills: ["UI Design", "HTML", "CSS"],
+      about: "Passionate about crafting clean and thoughtful user interfaces that feel both simple and refined.",
+      skills: ["UI/UX", "HTML", "CSS"],
+      skillLinks: {
+        "UI/UX": "https://www.figma.com/proto/vX7UiraE8mvEJfdbD20XyS/Rizze---Arizza-V.?node-id=5-6&p=f&t=8r27ZG22L3UxIEhT-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1",
+        HTML: "https://github.com/nenelipardz-sys/WebTech.git",
+        CSS: "https://github.com/nenelipardz-sys/WebTech.git"
+      },
       contribution: "Led the visual design direction, creating the overall aesthetic and component designs that define Rizze Beauty's luxurious look and feel."
     },
     {
@@ -855,7 +870,12 @@ function getFallbackTeam() {
       role: "Programmer",
       image: "assets/team-profile-img%20%281%29.png",
       about: "Driven by continuous growth and learning, with a focus on building reliable and structured front-end implementations.",
-      skills: ["HTML", "CSS"],
+      skills: ["Python", "HTML", "CSS"],
+      skillLinks: {
+        Python: "https://github.com/8mvr/Python-pygame.git",
+        HTML: "https://www.codedex.io/html",
+        CSS: "https://www.codedex.io/css"
+      },
       contribution: "Implemented the responsive layouts and styled components, translating design mockups into functional, pixel-perfect code."
     },
     {
@@ -864,7 +884,11 @@ function getFallbackTeam() {
       role: "Editor",
       image: "assets/team-member-img.png",
       about: "Detail-oriented and focused on refining outputs to ensure clarity, consistency, and overall quality of the project.",
-      skills: ["JSON", "UI Design"],
+      skills: ["JSON", "UI/UX"],
+      skillLinks: {
+        JSON: "https://www.w3schools.com/js/js_json.asp",
+        "UI/UX": "https://www.figma.com/resource-library/difference-between-ui-and-ux/"
+      },
       contribution: "Ensured content consistency across all pages, refined copy, and maintained quality standards throughout the project lifecycle."
     },
     {
@@ -874,15 +898,22 @@ function getFallbackTeam() {
       image: "assets/team-profile-img%20%282%29.png",
       about: "Provides direction and coordination for the team, ensuring smooth collaboration and steady progress throughout the project.",
       skills: ["HTML"],
+      skillLinks: {
+        HTML: "https://www.w3schools.com/html/"
+      },
       contribution: "Coordinated team efforts, set project milestones, and ensured deliverables met quality and timeline expectations."
     },
     {
       id: "johnley",
       name: "Johnley T. Jugo",
-      role: "Frontend Designer",
+      role: "Editor",
       image: "assets/team-profile-img%20%283%29.png",
       about: "Dedicated to continuous learning and improvement, contributing to both the design and development aspects of the project.",
       skills: ["JavaScript", "UI/UX"],
+      skillLinks: {
+        JavaScript: "https://www.w3schools.com/js/",
+        "UI/UX": "https://www.figma.com/proto/vX7UiraE8mvEJfdbD20XyS/Rizze---Arizza-V.?node-id=5-960&p=f&t=8r27ZG22L3UxIEhT-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1"
+      },
       contribution: "Contributed to design refinements and development support, bridging the gap between visual design and technical implementation."
     }
   ];

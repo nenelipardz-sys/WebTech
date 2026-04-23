@@ -857,7 +857,8 @@ a {
   margin-top: 0.75rem;
 }
 
-.skill-tags span {
+.skill-tags span,
+.skill-tags a {
   background: #f0eadf;
   color: var(--accent);
   padding: 0.4rem 0.65rem;
@@ -865,6 +866,11 @@ a {
   text-transform: uppercase;
   font-size: 0.65rem;
   font-weight: 700;
+}
+
+.skill-tags a {
+  text-decoration: none;
+  display: inline-block;
 }
 
 .cart-main,
