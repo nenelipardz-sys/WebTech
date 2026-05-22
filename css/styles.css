@@ -703,6 +703,62 @@ a {
   background-position: center;
 }
 
+.testimonial-summary {
+  padding: 3rem 0 1.5rem;
+}
+
+.testimonial-summary .section-title-wrap h4 {
+  color: #202a26;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+}
+
+.testimonial-summary .section-title-wrap p {
+  color: #4f5b57;
+  max-width: 620px;
+  margin: 0.65rem auto 0;
+}
+
+.testimonial-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.stats-card {
+  background: #fff;
+  border: 1px solid rgba(34, 46, 44, 0.08);
+  border-radius: 16px;
+  padding: 1.4rem;
+  box-shadow: 0 12px 28px rgba(18, 25, 23, 0.05);
+}
+
+.rating-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.rating-number {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a2b28;
+}
+
+.rating-stars {
+  color: #f1c40f;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+}
+
+.stats-card p {
+  color: #49514d;
+  line-height: 1.7;
+}
+
 .light-text h2,
 .light-text p {
   color: #fff;
@@ -1368,6 +1424,7 @@ a {
   .product-grid,
   .difference-grid,
   .testimonial-grid,
+  .testimonial-summary-grid,
   .compact,
   .footer-grid,
   .grid-3,

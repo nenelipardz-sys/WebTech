@@ -530,10 +530,14 @@ function setupCheckout() {
     };
 
     state.orders.unshift(newOrder);
+    console.log('DEBUG[WebTech]: saving orders (count before save):', state.orders.length);
     saveStorage(STORAGE.orders, state.orders);
+    console.log('DEBUG[WebTech]: saved orders (read back):', readStorage(STORAGE.orders, []).length);
 
     state.cart = [];
+    console.log('DEBUG[WebTech]: clearing cart and saving (count before save):', state.cart.length);
     saveStorage(STORAGE.cart, state.cart);
+    console.log('DEBUG[WebTech]: saved cart (read back):', readStorage(STORAGE.cart, []).length);
 
     updateCountBadges();
     window.location.href = "success.html";

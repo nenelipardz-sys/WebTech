@@ -8,6 +8,26 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css?v=20260417b" />
+  <script>
+    (function () {
+      try {
+        const auth = JSON.parse(localStorage.getItem("rizze_auth") || "null");
+        if (!auth || !auth.email) {
+          return;
+        }
+
+        const orders = JSON.parse(localStorage.getItem("rizze_orders") || "[]");
+        if (!orders.some((order) => order.userEmail === auth.email)) {
+          return;
+        }
+
+        const cart = JSON.parse(localStorage.getItem("rizze_cart") || "[]");
+        window.location.replace(cart.length === 0 ? "cart.html" : "orders.html");
+      } catch (error) {
+        // Ignore storage parse issues and let the main app handle the page.
+      }
+    })();
+  </script>
 </head>
 <body data-page="checkout">
     <header class="site-header">
