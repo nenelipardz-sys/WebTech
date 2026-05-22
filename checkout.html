@@ -55,18 +55,30 @@
         <form id="checkout-form" class="checkout-form">
           <h3>Contact Information</h3>
           <div class="grid-2">
-            <label>First Name<input required type="text" /></label>
-            <label>Last Name<input required type="text" /></label>
+            <label>First Name<input id="checkout-first-name" required type="text" autocomplete="given-name" /></label>
+            <label>Last Name<input id="checkout-last-name" required type="text" autocomplete="family-name" /></label>
           </div>
-          <label>Email Address<input required type="email" /></label>
-          <label>Phone<input required type="tel" /></label>
+          <label>Email Address<input id="checkout-email" required type="email" autocomplete="email" /></label>
+          <label>Phone Number<input id="checkout-phone" data-digits-only required type="tel" inputmode="numeric" autocomplete="tel" /></label>
 
           <h3>Shipping Address</h3>
-          <label>Address<input required type="text" /></label>
+          <label>Address Line<input id="checkout-address" required type="text" autocomplete="address-line1" /></label>
           <div class="grid-3">
-            <label>City<input required type="text" /></label>
-            <label>Province<input required type="text" /></label>
-            <label>Zip Code<input required type="text" /></label>
+            <label>City<input id="checkout-city" required type="text" autocomplete="address-level2" /></label>
+            <label>Province<input id="checkout-province" required type="text" autocomplete="address-level1" /></label>
+            <label>Zip Code<input id="checkout-zip" data-digits-only required type="text" inputmode="numeric" autocomplete="postal-code" /></label>
+          </div>
+
+          <h3>Shipping Method</h3>
+          <div class="shipping-options" id="shipping-options">
+            <button class="shipping-option active" type="button" data-shipping="free" data-fee="0" data-days="5-7 business days">
+              <strong>Free Shipping</strong>
+              <span>P 0.00 | 5-7 business days</span>
+            </button>
+            <button class="shipping-option" type="button" data-shipping="standard" data-fee="120" data-days="2-4 business days">
+              <strong>Standard Shipping</strong>
+              <span>P 120.00 | 2-4 business days</span>
+            </button>
           </div>
 
           <h3>Payment Method</h3>
@@ -92,7 +104,10 @@
           <button class="btn btn-dark full" id="pay-now-btn" type="submit">Pay Now - P 0.00</button>
         </form>
 
-        <aside class="order-summary-card" id="checkout-summary"></aside>
+        <aside class="checkout-side">
+          <a class="checkout-customer-summary" id="checkout-customer-summary" href="profile.html"></a>
+          <div class="order-summary-card" id="checkout-summary"></div>
+        </aside>
       </div>
     </div>
   </main>

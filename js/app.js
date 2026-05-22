@@ -1,22 +1,183 @@
+// Local storage key names used across the site for persistence.
 const STORAGE = {
   cart: "rizze_cart",
   favorites: "rizze_favorites",
-  orders: "rizze_orders"
+  orders: "rizze_orders",
+  auth: "rizze_auth",
+  users: "rizze_users",
+  profiles: "rizze_profiles"
 };
 
+// Read the current page type from the body attribute.
 const page = document.body.dataset.page;
 
+// Global application state for products, team data, user session, cart, and UI state.
 const state = {
   products: [],
   team: [],
   cart: readStorage(STORAGE.cart, []),
   favorites: new Set(readStorage(STORAGE.favorites, [])),
   orders: readStorage(STORAGE.orders, []),
+  users: readStorage(STORAGE.users, []),
+  profiles: readStorage(STORAGE.profiles, {}),
+  user: readStorage(STORAGE.auth, null),
   currentCategory: "all",
   currentSort: "default",
-  paymentMethod: "card"
+  paymentMethod: "card",
+  shippingMethod: "free"
 };
 
+// Flag used to avoid registering the same auth menu click handler more than once.
+let authMenuListenerAdded = false;
+
+// Check if a user is currently signed in.
+function isAuthenticated() {
+  return Boolean(state.user && state.user.email);
+}
+
+// Create or update the auth/profile action in the top navigation.
+function renderAuthAction() {
+  const navIcons = document.querySelector(".nav-icons");
+  if (!navIcons) {
+    return;
+  }
+
+  let authLink = document.getElementById("auth-action-link");
+  if (!authLink) {
+    authLink = document.createElement("div");
+    authLink.className = "nav-icon auth-action";
+    authLink.id = "auth-action-link";
+    authLink.tabIndex = 0;
+    navIcons.appendChild(authLink);
+  }
+
+  const menuContent = isAuthenticated()
+    ? `
+      <a class="auth-menu-link" href="profile.html" id="auth-profile">Profile</a>
+      
+      <button class="auth-menu-link" type="button" id="auth-logout">Logout</button>
+    `
+    : `<a class="auth-menu-link" href="signin.html">Sign In</a>`;
+
+  authLink.innerHTML = `
+    <span class="auth-icon">👤</span>
+    <div class="auth-menu" aria-label="Account menu">
+      ${menuContent}
+    </div>
+  `;
+
+  authLink.classList.remove("open");
+  // Toggle the dropdown menu when the auth icon is clicked.
+  authLink.onclick = (event) => {
+    event.stopPropagation();
+    authLink.classList.toggle("open");
+  };
+
+  const logoutButton = authLink.querySelector("#auth-logout");
+  if (logoutButton) {
+    logoutButton.onclick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      authLink.classList.remove("open");
+      logoutUser();
+    };
+  }
+
+  if (!authMenuListenerAdded) {
+    document.addEventListener("click", (event) => {
+      const authNode = document.getElementById("auth-action-link");
+      if (!authNode) {
+        return;
+      }
+      if (!authNode.contains(event.target)) {
+        authNode.classList.remove("open");
+      }
+    });
+    authMenuListenerAdded = true;
+  }
+}
+
+// Save signed-in user info to state and localStorage, then refresh nav UI.
+function setAuthenticatedUser(user) {
+  state.user = {
+    name: user.name,
+    email: user.email
+  };
+  saveStorage(STORAGE.auth, state.user);
+  ensureProfileRecord(state.user);
+  renderAuthAction();
+}
+
+// Log the user out, clear auth state, and redirect if needed.
+function logoutUser() {
+  // Clear user authentication
+  state.user = null;
+  saveStorage(STORAGE.auth, null);
+  
+  // Clear cart and orders when logging out
+  state.cart = [];
+  state.orders = [];
+  saveStorage(STORAGE.cart, []);
+  saveStorage(STORAGE.orders, []);
+  
+  // Update UI immediately
+  renderAuthAction();
+  updateCountBadges();
+  
+  // Re-render current page content if needed
+  if (page === "cart") {
+    renderCartPage();
+  }
+  if (page === "orders") {
+    renderOrdersPage();
+  }
+  
+  // Redirect to home page
+  if (!window.location.pathname.endsWith("index.html")) {
+    window.location.href = "index.html";
+  }
+}
+
+// Validate login credentials and sign in the user if matching data exists.
+function loginUser(email, password) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const user = state.users.find((item) => item.email === normalizedEmail);
+  if (!user || user.password !== password) {
+    return false;
+  }
+  setAuthenticatedUser(user);
+  return true;
+}
+
+// Register a new user, persist their data, and log them in immediately.
+function registerUser(name, email, password) {
+  const normalizedEmail = email.trim().toLowerCase();
+  if (state.users.some((item) => item.email === normalizedEmail)) {
+    return false;
+  }
+  const newUser = {
+    name: name.trim(),
+    email: normalizedEmail,
+    password
+  };
+  state.users.push(newUser);
+  saveStorage(STORAGE.users, state.users);
+  setAuthenticatedUser(newUser);
+  return true;
+}
+
+// Read a redirect URL from query parameters if present.
+function getRedirectTarget(defaultTarget = "index.html") {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("redirect") || defaultTarget;
+}
+
+// Navigate to the sign-in page and preserve the return target.
+function redirectToSignin(target = "checkout.html") {
+  window.location.href = `signin.html?redirect=${encodeURIComponent(target)}`;
+}
+
+// URL mapping from category keys to shop pages.
 const CATEGORY_PAGE = {
   all: "products.html",
   skincare: "products-skincare.html",
@@ -24,6 +185,7 @@ const CATEGORY_PAGE = {
   fragrance: "products-fragrance.html"
 };
 
+// Mapping from member IDs to their profile page URLs.
 const MEMBER_PAGE = {
   arizza: "member-arizza.html",
   maverick: "member-maverick.html",
@@ -32,11 +194,13 @@ const MEMBER_PAGE = {
   johnley: "member-johnley.html"
 };
 
+// Load guards to prevent duplicate data fetching.
 let productsLoaded = false;
 let teamLoaded = false;
 
 document.addEventListener("DOMContentLoaded", init);
 
+// Main application bootstrap function.
 async function init() {
   setupMobileMenu();
   setupModalClose();
@@ -44,9 +208,12 @@ async function init() {
   await ensureTeam();
 
   updateCountBadges();
+  renderAuthAction();
 
   if (page === "home") {
     renderHomeSections();
+    setupReviewModal();
+    setupTestimonialScroll();
   }
 
   if (page === "products") {
@@ -67,15 +234,34 @@ async function init() {
   }
 
   if (page === "checkout") {
+    if (!isAuthenticated()) {
+      redirectToSignin("checkout.html");
+      return;
+    }
+
     renderCheckoutPage();
     setupCheckout();
+  }
+
+  if (page === "login") {
+    initLoginPage();
+  }
+
+  if (page === "signin") {
+    initSigninPage();
   }
 
   if (page === "orders") {
     renderOrdersPage();
   }
+
+  if (page === "profile") {
+    renderProfilePage();
+    setupProfilePage();
+  }
 }
 
+// Load products from JSON only once; use fallback data if loading fails.
 async function ensureProducts() {
   if (productsLoaded) {
     return;
@@ -85,6 +271,7 @@ async function ensureProducts() {
   productsLoaded = true;
 }
 
+// Load team data from JSON only once; use fallback data if loading fails.
 async function ensureTeam() {
   if (teamLoaded) {
     return;
@@ -94,6 +281,7 @@ async function ensureTeam() {
   teamLoaded = true;
 }
 
+// Utility to fetch JSON and return fallback data if the request fails.
 async function loadJson(path, fallback) {
   try {
     const response = await fetch(path);
@@ -106,6 +294,7 @@ async function loadJson(path, fallback) {
   }
 }
 
+// Enable the mobile navigation toggle button.
 function setupMobileMenu() {
   const toggle = document.getElementById("menu-toggle");
   const nav = document.getElementById("site-nav");
@@ -118,6 +307,154 @@ function setupMobileMenu() {
   });
 }
 
+// Set up the review modal and star rating interactions.
+function setupReviewModal() {
+  const writeReviewBtn = document.getElementById("write-review-btn");
+  const reviewModal = document.getElementById("review-modal");
+  const reviewModalClose = document.getElementById("review-modal-close");
+  const reviewForm = document.getElementById("review-form");
+  const starSelector = document.getElementById("star-selector");
+  const reviewRating = document.getElementById("review-rating");
+
+  // Add staggered animations to existing testimonial cards
+  const existingCards = document.querySelectorAll(".stats-card");
+  existingCards.forEach((card, index) => {
+    card.style.animationDelay = `${index * 0.2}s`;
+  });
+
+  if (!writeReviewBtn || !reviewModal) {
+    return;
+  }
+
+  // Open review modal when button is clicked.
+  writeReviewBtn.onclick = () => {
+    reviewModal.classList.add("show");
+  };
+
+  // Close review modal when close button is clicked.
+  if (reviewModalClose) {
+    reviewModalClose.onclick = () => {
+      reviewModal.classList.remove("show");
+    };
+  }
+
+  // Handle star rating selection.
+  if (starSelector) {
+    starSelector.onclick = (event) => {
+      const starBtn = event.target.closest(".star-btn");
+      if (!starBtn) {
+        return;
+      }
+      event.preventDefault();
+      const rating = starBtn.dataset.rating;
+      reviewRating.value = rating;
+
+      // Update active star styling.
+      for (const btn of starSelector.querySelectorAll(".star-btn")) {
+        btn.classList.remove("active");
+      }
+      for (let i = 0; i < rating; i++) {
+        starSelector.querySelectorAll(".star-btn")[i].classList.add("active");
+      }
+    };
+
+    // Initialize first 5 stars as active (default rating).
+    const starBtns = starSelector.querySelectorAll(".star-btn");
+    for (let i = 0; i < 5; i++) {
+      starBtns[i].classList.add("active");
+    }
+  }
+
+  // Handle form submission.
+  if (reviewForm) {
+    reviewForm.onsubmit = (event) => {
+      event.preventDefault();
+      const name = document.getElementById("review-name").value.trim();
+      const text = document.getElementById("review-text").value.trim();
+      const rating = reviewRating.value;
+
+      if (!name || !text) {
+        showToast("Please fill in all fields.");
+        return;
+      }
+
+      // Add review to testimonials summary section.
+      const testimonialGrid = document.querySelector(".testimonial-summary-grid");
+      if (testimonialGrid) {
+        const existingCards = testimonialGrid.querySelectorAll(".stats-card").length;
+        const newReview = document.createElement("article");
+        newReview.className = "stats-card";
+        newReview.style.animationDelay = `${existingCards * 0.2}s`;
+        newReview.innerHTML = `
+            <div class="rating-row">
+              <span class="rating-number">${rating}.0</span>
+              <span class="rating-stars">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</span>
+            </div>
+          <p>"${text}"</p>
+          <strong>- ${name}</strong>
+        `;
+        testimonialGrid.appendChild(newReview);
+      }
+
+      // Show success message and close modal.
+      showToast("Thank you for your review!");
+      reviewForm.reset();
+      reviewModal.classList.remove("show");
+      reviewRating.value = "5";
+
+      // Reset stars to default.
+      const starBtns = starSelector.querySelectorAll(".star-btn");
+      for (let i = 0; i < 5; i++) {
+        starBtns[i].classList.add("active");
+      }
+    };
+  }
+}
+
+// Highlight the center testimonial card while scrolling.
+function setupTestimonialScroll() {
+  const testimonialGrid = document.querySelector(".testimonial-summary-grid");
+  if (!testimonialGrid) {
+    return;
+  }
+
+  const cards = Array.from(testimonialGrid.querySelectorAll(".stats-card"));
+  if (!cards.length) {
+    return;
+  }
+
+  const updateActiveCard = () => {
+    const center = testimonialGrid.scrollLeft + testimonialGrid.clientWidth / 2;
+    let closest = null;
+    let distance = Infinity;
+
+    cards.forEach((card) => {
+      const rect = card.getBoundingClientRect();
+      const cardCenter = rect.left + rect.width / 2 + window.scrollX;
+      const gridLeft = testimonialGrid.getBoundingClientRect().left + window.scrollX;
+      const relativeCenter = cardCenter - gridLeft + testimonialGrid.scrollLeft;
+      const currentDistance = Math.abs(relativeCenter - center);
+      if (currentDistance < distance) {
+        distance = currentDistance;
+        closest = card;
+      }
+    });
+
+    cards.forEach((card) => card.classList.toggle("active-card", card === closest));
+  };
+
+  testimonialGrid.addEventListener("scroll", () => {
+    window.requestAnimationFrame(updateActiveCard);
+  });
+
+  window.addEventListener("resize", () => {
+    window.requestAnimationFrame(updateActiveCard);
+  });
+
+  updateActiveCard();
+}
+
+// Render the featured home page product sections.
 function renderHomeSections() {
   const bestSellerGrid = document.getElementById("best-sellers-grid");
   const newArrivalsGrid = document.getElementById("new-arrivals-grid");
@@ -139,6 +476,7 @@ function renderHomeSections() {
   }
 }
 
+// Initialize category chips and sort controls on the products page.
 function setupShopControls() {
   const chipRow = document.getElementById("chip-row");
   const sortSelect = document.getElementById("sort-select");
@@ -184,6 +522,7 @@ function setupShopControls() {
   });
 }
 
+// Apply category filtering and sorting to the products grid.
 function applyShopView() {
   const grid = document.getElementById("products-grid");
   if (!grid) {
@@ -211,6 +550,7 @@ function applyShopView() {
   renderProductCards(grid, items);
 }
 
+// Render a list of product cards into the provided container.
 function renderProductCards(container, products, options = {}) {
   if (products.length === 0) {
     container.innerHTML = "<p>No products found in this category.</p>";
@@ -245,6 +585,7 @@ function renderProductCards(container, products, options = {}) {
   };
 }
 
+// Build the HTML for a single product card from product data.
 function createProductCard(product, options = {}) {
   const badge = product.bestSeller
     ? `<span class="product-badge best">Best Seller</span>`
@@ -273,6 +614,7 @@ function createProductCard(product, options = {}) {
   `;
 }
 
+// Open the quick-view modal for the selected product.
 function openProductModal(productId) {
   const product = state.products.find((item) => item.id === productId);
   const modal = document.getElementById("product-modal");
@@ -310,6 +652,7 @@ function openProductModal(productId) {
   }
 }
 
+// Close the product modal when clicking outside its content area.
 function setupModalClose() {
   document.addEventListener("click", (event) => {
     const modal = event.target.closest(".modal");
@@ -323,6 +666,101 @@ function setupModalClose() {
   });
 }
 
+// Initialize login page form and behavior.
+function initLoginPage() {
+  if (isAuthenticated()) {
+    window.location.href = getRedirectTarget("index.html");
+    return;
+  }
+
+  const form = document.getElementById("login-form");
+  const emailInput = document.getElementById("login-email");
+  const passwordInput = document.getElementById("login-password");
+  const signupLink = document.getElementById("login-signup-link");
+  const redirectTarget = getRedirectTarget("index.html");
+
+  if (signupLink) {
+    signupLink.href = `signin.html?redirect=${encodeURIComponent(redirectTarget)}`;
+  }
+
+  if (!form || !emailInput || !passwordInput) {
+    return;
+  }
+
+  form.onsubmit = (event) => {
+    event.preventDefault();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+      showToast("Please enter your email and password.");
+      return;
+    }
+
+    if (loginUser(email, password)) {
+      window.location.href = redirectTarget;
+      return;
+    }
+
+    showToast("Email or password is incorrect.");
+  };
+}
+
+// Initialize sign-up page form and behavior.
+function initSigninPage() {
+  if (isAuthenticated()) {
+    window.location.href = getRedirectTarget("index.html");
+    return;
+  }
+
+  const form = document.getElementById("signin-form");
+  const nameInput = document.getElementById("signin-name");
+  const emailInput = document.getElementById("signin-email");
+  const passwordInput = document.getElementById("signin-password");
+  const confirmPasswordInput = document.getElementById("signin-confirm-password");
+  const loginLink = document.getElementById("signin-login-link");
+  const redirectTarget = getRedirectTarget("index.html");
+
+  if (loginLink) {
+    loginLink.href = `login.html?redirect=${encodeURIComponent(redirectTarget)}`;
+  }
+
+  if (!form || !nameInput || !emailInput || !passwordInput || !confirmPasswordInput) {
+    return;
+  }
+
+  form.onsubmit = (event) => {
+    event.preventDefault();
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+
+    if (!name || !email || !password || !confirmPassword) {
+      showToast("Please complete all fields to create an account.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showToast("Passwords do not match.");
+      return;
+    }
+
+    if (password.length < 8) {
+      showToast("Password must be at least 8 characters.");
+      return;
+    }
+
+    if (!registerUser(name, email, password)) {
+      showToast("An account with that email already exists.");
+      return;
+    }
+
+    window.location.href = redirectTarget;
+  };
+}
+
+// Toggle the favorite state for a product and save it to storage.
 function toggleFavorite(productId) {
   if (state.favorites.has(productId)) {
     state.favorites.delete(productId);
@@ -335,6 +773,7 @@ function toggleFavorite(productId) {
   saveStorage(STORAGE.favorites, Array.from(state.favorites));
 }
 
+// Add a product to the cart, increase quantity if already present.
 function addToCart(productId) {
   const current = state.cart.find((item) => item.id === productId);
   if (current) {
@@ -356,6 +795,7 @@ function addToCart(productId) {
   }
 }
 
+// Build and display the shopping cart page content.
 function renderCartPage() {
   const filled = document.getElementById("cart-filled");
   const empty = document.getElementById("cart-empty");
@@ -363,6 +803,9 @@ function renderCartPage() {
   const subtotalNode = document.getElementById("subtotal-price");
   const totalNode = document.getElementById("cart-total");
   const checkoutBtn = document.getElementById("checkout-btn");
+  const customerSummary = document.getElementById("cart-customer-summary");
+  const shippingCard = document.getElementById("cart-shipping-card");
+  const paymentCard = document.getElementById("cart-payment-card");
 
   if (!filled || !empty || !itemsWrap || !subtotalNode || !totalNode || !checkoutBtn) {
     return;
@@ -378,11 +821,181 @@ function renderCartPage() {
   if (detailedItems.length === 0) {
     filled.classList.add("hidden");
     empty.classList.remove("hidden");
+    if (customerSummary) customerSummary.classList.add("hidden");
+    if (shippingCard) shippingCard.classList.add("hidden");
+    if (paymentCard) paymentCard.classList.add("hidden");
     return;
   }
 
   filled.classList.remove("hidden");
   empty.classList.add("hidden");
+
+  const profile = isAuthenticated() ? getProfileRecord() : null;
+  const address = profile ? getPrimaryAddress(profile) : null;
+  state.shippingMethod = profile?.shippingMethod || state.shippingMethod || "free";
+  state.paymentMethod = profile?.paymentMethod || state.paymentMethod || "card";
+  // Render customer summary, shipping and payment cards on cart page
+  const shipping = getShippingOptionDetails(state.shippingMethod);
+
+  if (customerSummary) {
+    if (address) {
+      customerSummary.classList.remove("hidden");
+      customerSummary.href = "profile.html";
+      customerSummary.innerHTML = `
+        <span class="checkout-customer-label">Saved profile</span>
+        <strong>${address.fullName} | ${address.phone}</strong>
+        <p>${formatAddressLine(address)}</p>
+      `;
+      // open profile when clicked (anchor already points to profile.html)
+    } else {
+      customerSummary.classList.add("hidden");
+      customerSummary.innerHTML = "";
+    }
+  }
+
+  if (shippingCard) {
+    if (address) {
+      shippingCard.classList.remove("hidden");
+      const freeOpt = getShippingOptionDetails("free");
+      const stdOpt = getShippingOptionDetails("standard");
+      shippingCard.innerHTML = `
+        <div class="method-head">Shipping</div>
+        <div class="method-body shipping-options">
+          <button class="btn shipping-option ${state.shippingMethod === "free" ? "active" : ""}" data-shipping="free">
+            <div class="opt-title">${freeOpt.label}</div>
+            <div class="opt-meta">${freeOpt.fee > 0 ? `P ${formatPrice(freeOpt.fee)}` : "Free"} · ${freeOpt.eta}</div>
+          </button>
+          <button class="btn shipping-option ${state.shippingMethod === "standard" ? "active" : ""}" data-shipping="standard">
+            <div class="opt-title">${stdOpt.label}</div>
+            <div class="opt-meta">P ${formatPrice(stdOpt.fee)} · ${stdOpt.eta}</div>
+          </button>
+        </div>
+      `;
+
+      shippingCard.onclick = (e) => {
+        const btn = e.target.closest("button[data-shipping]");
+        if (!btn) return;
+        const sel = btn.dataset.shipping;
+        state.shippingMethod = sel;
+        const profile = getProfileRecord();
+        if (profile) {
+          profile.shippingMethod = sel;
+          saveProfileRecord(profile.email, profile);
+        }
+        // toggle active classes
+        shippingCard.querySelectorAll("button[data-shipping]").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        // update cart summary shipping and total
+        const subtotal = calculateCartTotal();
+        const shippingFee = getShippingOptionDetails(state.shippingMethod).fee;
+        const total = subtotal + shippingFee;
+        const cartSummaryEl = document.getElementById("cart-summary");
+        if (cartSummaryEl) {
+          const rows = Array.from(cartSummaryEl.querySelectorAll(".summary-row"));
+          const shipRow = rows.find((r) => r.querySelector("span") && r.querySelector("span").textContent.trim() === "Shipping");
+          if (shipRow) {
+            shipRow.querySelector("strong").textContent = shippingFee > 0 ? `P ${formatPrice(shippingFee)}` : "Free";
+          }
+        }
+        const totalNode = document.getElementById("cart-total");
+        if (totalNode) totalNode.textContent = `₱ ${formatPrice(total)}`;
+      };
+    } else {
+      shippingCard.classList.add("hidden");
+      shippingCard.innerHTML = "";
+    }
+  }
+
+  if (paymentCard) {
+    if (address) {
+      paymentCard.classList.remove("hidden");
+      paymentCard.innerHTML = `
+        <div class="method-head">Payment Method</div>
+        <div class="method-body payment-options">
+          <button class="btn payment-option ${state.paymentMethod === "card" ? "active" : ""}" data-payment="card">
+            <div class="opt-title">Online Payment</div>
+            <div class="opt-meta">Debit / Credit card</div>
+          </button>
+          <button class="btn payment-option ${state.paymentMethod === "cod" ? "active" : ""}" data-payment="cod">
+            <div class="opt-title">Cash on Delivery</div>
+            <div class="opt-meta">Pay when you receive</div>
+          </button>
+        </div>
+      `;
+
+      // wire payment option clicks and modal
+      const paymentModal = document.getElementById("payment-modal");
+      const paymentModalClose = document.getElementById("payment-modal-close");
+      const paymentCancel = document.getElementById("payment-cancel");
+      const paymentForm = document.getElementById("payment-form");
+
+      function openPaymentModal() {
+        if (!paymentModal) return;
+        paymentModal.classList.add("show");
+        paymentModal.setAttribute("aria-hidden", "false");
+      }
+      function closePaymentModal() {
+        if (!paymentModal) return;
+        paymentModal.classList.remove("show");
+        paymentModal.setAttribute("aria-hidden", "true");
+      }
+
+      if (paymentModalClose) paymentModalClose.onclick = closePaymentModal;
+      if (paymentCancel) paymentCancel.onclick = closePaymentModal;
+
+      paymentCard.onclick = (e) => {
+        const btn = e.target.closest("button[data-payment]");
+        if (!btn) return;
+        const sel = btn.dataset.payment;
+        const profile = getProfileRecord();
+        if (sel === "card") {
+          // open card entry modal
+          openPaymentModal();
+        } else {
+          // choose COD
+          state.paymentMethod = sel;
+          if (profile) {
+            profile.paymentMethod = sel;
+            saveProfileRecord(profile.email, profile);
+          }
+          // toggle active classes
+          paymentCard.querySelectorAll("button[data-payment]").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+        }
+      };
+
+      if (paymentForm) {
+        paymentForm.onsubmit = (ev) => {
+          ev.preventDefault();
+          const cardName = document.getElementById("card-name")?.value.trim();
+          const cardNumber = document.getElementById("card-number")?.value.replace(/\s+/g, "");
+          const cardExp = document.getElementById("card-exp")?.value.trim();
+          const cardCvv = document.getElementById("card-cvv")?.value.trim();
+          if (!cardName || !cardNumber || cardNumber.length < 12 || !cardExp || !cardCvv || cardCvv.length < 3) {
+            showToast("Please complete card details.");
+            return;
+          }
+          // record selection as card
+          state.paymentMethod = "card";
+          const profile = getProfileRecord();
+          if (profile) {
+            profile.paymentMethod = "card";
+            saveProfileRecord(profile.email, profile);
+          }
+          // close modal and mark active
+          closePaymentModal();
+          paymentCard.querySelectorAll("button[data-payment]").forEach((b) => b.classList.remove("active"));
+          const active = paymentCard.querySelector("button[data-payment=\"card\"]");
+          if (active) active.classList.add("active");
+          showToast("Payment method saved.");
+        };
+      }
+    } else {
+      paymentCard.classList.add("hidden");
+      paymentCard.innerHTML = "";
+    }
+  }
 
   itemsWrap.innerHTML = detailedItems
     .map(
@@ -393,7 +1006,7 @@ function renderCartPage() {
           <h3>${item.name}</h3>
           <p class="price">₱ ${formatPrice(item.price)}</p>
           <div class="qty-box">
-            <button data-qty="minus" data-id="${item.id}">−</button>
+              <button data-qty="minus" data-id="${item.id}">−</button>
             <span>${item.qty}</span>
             <button data-qty="plus" data-id="${item.id}">+</button>
           </div>
@@ -404,8 +1017,19 @@ function renderCartPage() {
     )
     .join("");
 
-  const total = calculateCartTotal();
-  subtotalNode.textContent = `₱ ${formatPrice(total)}`;
+  const subtotal = calculateCartTotal();
+  const shippingFee = address ? getShippingOptionDetails(state.shippingMethod).fee : 0;
+  const total = subtotal + shippingFee;
+  subtotalNode.textContent = `₱ ${formatPrice(subtotal)}`;
+  // update shipping line inside cart summary if present
+  const cartSummaryEl = document.getElementById("cart-summary");
+  if (cartSummaryEl) {
+    const rows = Array.from(cartSummaryEl.querySelectorAll(".summary-row"));
+    const shipRow = rows.find((r) => r.querySelector("span") && r.querySelector("span").textContent.trim() === "Shipping");
+    if (shipRow) {
+      shipRow.querySelector("strong").textContent = shippingFee > 0 ? `P ${formatPrice(shippingFee)}` : "Free";
+    }
+  }
   totalNode.textContent = `₱ ${formatPrice(total)}`;
 
   itemsWrap.onclick = (event) => {
@@ -435,14 +1059,99 @@ function renderCartPage() {
   };
 
   checkoutBtn.onclick = () => {
+    if (!isAuthenticated()) {
+      redirectToSignin("checkout.html");
+      return;
+    }
+
+    if (!state.cart || state.cart.length === 0) {
+      showToast('Cart is empty');
+      return;
+    }
+    // If user already has a saved address and has selected shipping & payment on cart page,
+    // allow placing the order directly from cart (second-order quick flow).
+    const profileRec = getProfileRecord();
+    const primaryAddr = getPrimaryAddress(profileRec);
+    if (primaryAddr && state.shippingMethod && state.paymentMethod) {
+      // try create order immediately
+      createOrderFromCart(primaryAddr);
+      return;
+    }
+
+    // Redirect to checkout page where user fills in address and payment details
     window.location.href = "checkout.html";
   };
 }
 
+// Create an order using current cart, shipping and payment selections (used for quick-order from cart)
+function createOrderFromCart(primaryAddr) {
+  if (!isAuthenticated() || !state.user?.email) {
+    showToast("Please sign in to complete checkout.");
+    redirectToSignin("checkout.html");
+    return;
+  }
+
+  try {
+    const shipping = getShippingOptionDetails(state.shippingMethod);
+    const subtotal = calculateCartTotal();
+    const total = subtotal + shipping.fee;
+    const timestamp = new Date();
+    const orderId = `ORD-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
+
+    const addressRecord = {
+      id: primaryAddr.id || `addr-${Date.now()}`,
+      label: primaryAddr.fullName || `${primaryAddr.firstName} ${primaryAddr.lastName}`,
+      fullName: primaryAddr.fullName || `${primaryAddr.firstName} ${primaryAddr.lastName}`,
+      firstName: primaryAddr.firstName || "",
+      lastName: primaryAddr.lastName || "",
+      email: primaryAddr.email || state.user.email,
+      phone: primaryAddr.phone || "",
+      addressLine: primaryAddr.addressLine || "",
+      city: primaryAddr.city || "",
+      province: primaryAddr.province || "",
+      zip: primaryAddr.zip || "",
+      shippingMethod: state.shippingMethod,
+      paymentMethod: state.paymentMethod,
+      isDefault: true
+    };
+
+    const newOrder = {
+      id: orderId,
+      date: timestamp.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+      method: getPaymentLabel(state.paymentMethod),
+      shipping: {
+        method: shipping.key,
+        label: shipping.label,
+        fee: shipping.fee,
+        eta: shipping.eta
+      },
+      shippingAddress: { ...addressRecord },
+      status: "Processing",
+      items: state.cart.map((entry) => ({ ...entry })),
+      subtotal,
+      total,
+      userEmail: state.user.email
+    };
+
+    state.orders.unshift(newOrder);
+    saveStorage(STORAGE.orders, state.orders);
+
+    state.cart = [];
+    saveStorage(STORAGE.cart, state.cart);
+    updateCountBadges();
+    window.location.href = "orders.html";
+  } catch (err) {
+    console.error('Quick checkout error:', err);
+    showToast('An error occurred while placing your order.');
+  }
+}
+
+// Render the checkout summary and payment section.
 function renderCheckoutPage() {
   const summary = document.getElementById("checkout-summary");
   const payNowBtn = document.getElementById("pay-now-btn");
   const cardFields = document.getElementById("card-fields");
+  const customerSummary = document.getElementById("checkout-customer-summary");
 
   if (!summary || !payNowBtn || !cardFields) {
     return;
@@ -455,7 +1164,9 @@ function renderCheckoutPage() {
     })
     .filter(Boolean);
 
-  const total = calculateCartTotal();
+  const subtotal = calculateCartTotal();
+  const shipping = getShippingOptionDetails(state.shippingMethod);
+  const total = subtotal + shipping.fee;
 
   summary.innerHTML = `
     <h3>Order Summary</h3>
@@ -473,8 +1184,9 @@ function renderCheckoutPage() {
     `
       )
       .join("")}
-    <div class="summary-row"><span>Subtotal</span><strong>P ${formatPrice(total)}</strong></div>
-    <div class="summary-row"><span>Shipping</span><strong>Free</strong></div>
+    <div class="summary-row"><span>Subtotal</span><strong>P ${formatPrice(subtotal)}</strong></div>
+    <div class="summary-row"><span>Shipping</span><strong>${shipping.label} - P ${formatPrice(shipping.fee)}</strong></div>
+    <div class="summary-row"><span>Delivery</span><strong>${shipping.eta}</strong></div>
     <div class="summary-row total"><span>Total</span><strong>P ${formatPrice(total)}</strong></div>
   `;
 
@@ -485,15 +1197,45 @@ function renderCheckoutPage() {
   } else {
     cardFields.classList.remove("hidden");
   }
+
+  if (customerSummary) {
+    const profile = getProfileRecord();
+    const address = getPrimaryAddress(profile);
+    if (address) {
+      customerSummary.classList.remove("is-empty");
+      customerSummary.innerHTML = `
+        <span class="checkout-customer-label">Saved profile</span>
+        <strong>${address.fullName} | ${address.phone}</strong>
+        <p>${formatAddressLine(address)}</p>
+        <small>${getShippingOptionDetails(profile.shippingMethod || state.shippingMethod).label} · ${getPaymentLabel(profile.paymentMethod || state.paymentMethod)}</small>
+      `;
+    } else {
+      customerSummary.classList.add("is-empty");
+      customerSummary.innerHTML = ``;
+    }
+  }
 }
 
+// Set up checkout payment option controls and order submission.
 function setupCheckout() {
   const paymentWrap = document.getElementById("payment-options");
+  const shippingWrap = document.getElementById("shipping-options");
   const form = document.getElementById("checkout-form");
+  const firstNameInput = document.getElementById("checkout-first-name");
+  const lastNameInput = document.getElementById("checkout-last-name");
+  const emailInput = document.getElementById("checkout-email");
+  const phoneInput = document.getElementById("checkout-phone");
+  const addressInput = document.getElementById("checkout-address");
+  const cityInput = document.getElementById("checkout-city");
+  const provinceInput = document.getElementById("checkout-province");
+  const zipInput = document.getElementById("checkout-zip");
 
   if (!paymentWrap || !form) {
     return;
   }
+
+  bindDigitsOnlyInputs(form);
+  populateCheckoutFormFromProfile();
 
   paymentWrap.onclick = (event) => {
     const option = event.target.closest("button[data-payment]");
@@ -509,6 +1251,22 @@ function setupCheckout() {
     renderCheckoutPage();
   };
 
+  if (shippingWrap) {
+    shippingWrap.onclick = (event) => {
+      const option = event.target.closest("button[data-shipping]");
+      if (!option) {
+        return;
+      }
+
+      state.shippingMethod = option.dataset.shipping;
+      for (const item of shippingWrap.querySelectorAll(".shipping-option")) {
+        item.classList.remove("active");
+      }
+      option.classList.add("active");
+      renderCheckoutPage();
+    };
+  }
+
   form.onsubmit = (event) => {
     event.preventDefault();
 
@@ -517,50 +1275,129 @@ function setupCheckout() {
       return;
     }
 
-    const timestamp = new Date();
-    const orderId = `ORD-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
+    if (!isAuthenticated() || !state.user?.email) {
+      showToast("Please sign in to complete checkout.");
+      redirectToSignin("checkout.html");
+      return;
+    }
 
-    const newOrder = {
-      id: orderId,
-      date: timestamp.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
-      method: state.paymentMethod === "cod" ? "Cash on Delivery" : "Pay via Card",
-      status: "Processing",
-      items: state.cart.map((entry) => ({ ...entry })),
-      total: calculateCartTotal()
-    };
+    try {
+      const firstName = firstNameInput.value.trim();
+      const lastName = lastNameInput.value.trim();
+      const email = emailInput.value.trim();
+      const phone = phoneInput.value.replace(/\D/g, "");
+      const addressLine = addressInput.value.trim();
+      const city = cityInput.value.trim();
+      const province = provinceInput.value.trim();
+      const zip = zipInput.value.replace(/\D/g, "");
+      const shipping = getShippingOptionDetails(state.shippingMethod);
 
-    state.orders.unshift(newOrder);
-    console.log('DEBUG[WebTech]: saving orders (count before save):', state.orders.length);
-    saveStorage(STORAGE.orders, state.orders);
-    console.log('DEBUG[WebTech]: saved orders (read back):', readStorage(STORAGE.orders, []).length);
+      if (!firstName || !lastName || !email || !phone || !addressLine || !city || !province || !zip) {
+        showToast("Please complete all checkout fields.");
+        return;
+      }
 
-    state.cart = [];
-    console.log('DEBUG[WebTech]: clearing cart and saving (count before save):', state.cart.length);
-    saveStorage(STORAGE.cart, state.cart);
-    console.log('DEBUG[WebTech]: saved cart (read back):', readStorage(STORAGE.cart, []).length);
+      const fullName = `${firstName} ${lastName}`.trim();
+      const timestamp = new Date();
+      const orderId = `ORD-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
+      const subtotal = calculateCartTotal();
+      const total = subtotal + shipping.fee;
 
-    updateCountBadges();
-    window.location.href = "success.html";
+      const addressRecord = {
+        id: `addr-${Date.now()}`,
+        label: fullName,
+        fullName,
+        firstName,
+        lastName,
+        email,
+        phone,
+        addressLine,
+        city,
+        province,
+        zip,
+        shippingMethod: state.shippingMethod,
+        paymentMethod: state.paymentMethod,
+        isDefault: true
+      };
+
+      const profile = getProfileRecord(state.user.email);
+      const existingAddresses = Array.isArray(profile.addresses) ? profile.addresses.filter((item) => item.id !== profile.defaultAddressId) : [];
+      const addresses = [addressRecord, ...existingAddresses].map((item, index) => ({
+        ...item,
+        isDefault: index === 0
+      }));
+
+      saveProfileRecord(state.user.email, {
+        ...profile,
+        fullName,
+        email,
+        phone,
+        shippingMethod: state.shippingMethod,
+        paymentMethod: state.paymentMethod,
+        defaultAddressId: addressRecord.id,
+        addresses
+      });
+
+      const newOrder = {
+        id: orderId,
+        date: timestamp.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+        method: getPaymentLabel(state.paymentMethod),
+        shipping: {
+          method: shipping.key,
+          label: shipping.label,
+          fee: shipping.fee,
+          eta: shipping.eta
+        },
+        shippingAddress: { ...addressRecord },
+        status: "Processing",
+        items: state.cart.map((entry) => ({ ...entry })),
+        subtotal,
+        total,
+        userEmail: state.user.email
+      };
+
+      state.orders.unshift(newOrder);
+      console.log('DEBUG: saving orders (count before save):', state.orders.length);
+      saveStorage(STORAGE.orders, state.orders);
+      console.log('DEBUG: saved orders (read back):', readStorage(STORAGE.orders, []).length);
+
+      state.cart = [];
+      console.log('DEBUG: clearing cart and saving (count before save):', state.cart.length);
+      saveStorage(STORAGE.cart, state.cart);
+      console.log('DEBUG: saved cart (read back):', readStorage(STORAGE.cart, []).length);
+
+      updateCountBadges();
+      window.location.href = "orders.html";
+    } catch (err) {
+      console.error('Checkout error:', err);
+      showToast('An error occurred while placing your order. Please try again.');
+    }
   };
 }
 
+// Render the user's order history page.
 function renderOrdersPage() {
   const list = document.getElementById("orders-list");
   if (!list) {
     return;
   }
 
-  if (state.orders.length === 0) {
+  // Filter orders to only show current user's orders
+  const userOrders = state.orders.filter(order => order.userEmail === state.user?.email);
+
+  if (userOrders.length === 0) {
     list.innerHTML = "<p>No orders yet. Start shopping to place your first order.</p>";
     return;
   }
 
-  list.innerHTML = state.orders
+  list.innerHTML = userOrders
     .map((order) => {
       const firstItem = order.items[0];
       const product = state.products.find((item) => item.id === firstItem.id);
       const productName = product ? product.name : "Product";
       const productImage = product ? product.image : "";
+      const shipping = order.shipping || getShippingOptionDetails();
+      const shippingAddress = order.shippingAddress ? formatAddressLine(order.shippingAddress) : "";
 
       return `
         <article class="order-card">
@@ -568,8 +1405,14 @@ function renderOrdersPage() {
             <div><span>Order ID</span><strong>${order.id}</strong></div>
             <div><span>Date Ordered</span><strong>${order.date}</strong></div>
             <div><span>Payment Method</span><strong>${order.method}</strong></div>
+            <div><span>Shipping</span><strong>${shipping.label} - P ${formatPrice(shipping.fee)}</strong></div>
+            <div><span>Delivery</span><strong>${shipping.eta}</strong></div>
             <div><span>Total</span><strong>P ${formatPrice(order.total)}</strong></div>
             <span class="status-pill">${order.status}</span>
+          </div>
+          <div class="order-details">
+            <strong>${order.shippingAddress?.fullName || state.user?.name || "Customer"}</strong>
+            <p>${shippingAddress}</p>
           </div>
           <div class="order-item">
             <img src="${productImage}" alt="${productName}" />
@@ -585,6 +1428,214 @@ function renderOrdersPage() {
     .join("");
 }
 
+// Render the profile page with saved account and address data.
+function renderProfilePage() {
+  const account = document.getElementById("profile-account");
+  const list = document.getElementById("profile-address-list");
+  const title = document.getElementById("profile-form-title");
+  const cancelButton = document.getElementById("profile-cancel-edit");
+  const signoutButton = document.getElementById("profile-signout");
+
+  if (!account || !list || !title || !cancelButton || !signoutButton) {
+    return;
+  }
+
+  if (!isAuthenticated()) {
+    window.location.href = "login.html?redirect=profile.html";
+    return;
+  }
+
+  const profile = getProfileRecord();
+  const primaryAddress = getPrimaryAddress(profile);
+  const shipping = getShippingOptionDetails(profile.shippingMethod || state.shippingMethod);
+
+  account.innerHTML = `
+    <div class="profile-summary-grid">
+      <div><span>Name</span><strong>${profile.fullName || state.user?.name || "—"}</strong></div>
+      <div><span>Email</span><strong>${profile.email || state.user?.email || "—"}</strong></div>
+      <div><span>Phone</span><strong>${profile.phone || "—"}</strong></div>
+      <div><span>Address</span><strong>${primaryAddress ? formatAddressLine(primaryAddress) : "No address saved yet"}</strong></div>
+    </div>
+  `;
+
+  list.innerHTML = profile.addresses.length
+    ? profile.addresses
+      .map((address) => `
+        <article class="profile-address-item ${address.isDefault ? "active" : ""}">
+          <div>
+            <strong>${address.fullName}</strong>
+            <p>${address.phone}</p>
+            <p>${formatAddressLine(address)}</p>
+            
+          </div>
+          <div class="profile-address-actions">
+            <button type="button" class="link-action" data-profile-address="edit" data-address-id="${address.id}">Edit</button>
+            <button type="button" class="link-action" data-profile-address="default" data-address-id="${address.id}">${address.isDefault ? "✓" : "Set default"}</button>
+          </div>
+        </article>
+      `)
+      .join("")
+    : `<p class="profile-empty">No addresses added.</p>`;
+
+  title.textContent = "Add address";
+  cancelButton.textContent = "Cancel";
+  signoutButton.onclick = () => logoutUser();
+}
+
+// Set up profile page interactions.
+function setupProfilePage() {
+  const form = document.getElementById("profile-address-form");
+  const addButton = document.getElementById("profile-add-address");
+  const cancelButton = document.getElementById("profile-cancel-edit");
+  const list = document.getElementById("profile-address-list");
+  const addressIdInput = document.getElementById("profile-address-id");
+  const title = document.getElementById("profile-form-title");
+  const firstNameInput = document.getElementById("profile-first-name");
+  const lastNameInput = document.getElementById("profile-last-name");
+  const emailInput = document.getElementById("profile-email");
+  const phoneInput = document.getElementById("profile-phone");
+  const addressLineInput = document.getElementById("profile-address-line");
+  const cityInput = document.getElementById("profile-city");
+  const provinceInput = document.getElementById("profile-province");
+  const zipInput = document.getElementById("profile-zip");
+  const defaultCheckbox = document.getElementById("profile-set-default");
+
+  if (!form || !addButton || !cancelButton || !list || !addressIdInput || !title) {
+    return;
+  }
+
+  bindDigitsOnlyInputs(form);
+
+  function resetForm() {
+    addressIdInput.value = "";
+    form.reset();
+    title.textContent = "Add address";
+    if (defaultCheckbox) {
+      defaultCheckbox.checked = true;
+    }
+  }
+
+  function loadAddressToForm(address) {
+    if (!address) {
+      return;
+    }
+
+    addressIdInput.value = address.id;
+    firstNameInput.value = address.firstName || "";
+    lastNameInput.value = address.lastName || "";
+    emailInput.value = address.email || state.user?.email || "";
+    phoneInput.value = address.phone || "";
+    addressLineInput.value = address.addressLine || "";
+    cityInput.value = address.city || "";
+    provinceInput.value = address.province || "";
+    zipInput.value = address.zip || "";
+    defaultCheckbox.checked = Boolean(address.isDefault);
+    title.textContent = "Edit address";
+  }
+
+  addButton.onclick = () => {
+    resetForm();
+    firstNameInput.focus();
+  };
+
+  cancelButton.onclick = () => {
+    resetForm();
+  };
+
+  list.onclick = (event) => {
+    const button = event.target.closest("button[data-profile-address]");
+    if (!button) {
+      return;
+    }
+
+    const profile = getProfileRecord();
+    const address = profile.addresses.find((item) => item.id === button.dataset.addressId);
+    if (!address) {
+      return;
+    }
+
+    if (button.dataset.profileAddress === "edit") {
+      loadAddressToForm(address);
+      return;
+    }
+
+    if (button.dataset.profileAddress === "default") {
+      const nextAddresses = profile.addresses.map((item) => ({
+        ...item,
+        isDefault: item.id === address.id
+      }));
+      saveProfileRecord(profile.email, {
+        ...profile,
+        defaultAddressId: address.id,
+        addresses: nextAddresses
+      });
+      renderProfilePage();
+    }
+  };
+
+  form.onsubmit = (event) => {
+    event.preventDefault();
+
+    const profile = getProfileRecord();
+    const firstName = firstNameInput.value.trim();
+    const lastName = lastNameInput.value.trim();
+    const email = emailInput.value.trim();
+    const phone = phoneInput.value.replace(/\D/g, "");
+    const addressLine = addressLineInput.value.trim();
+    const city = cityInput.value.trim();
+    const province = provinceInput.value.trim();
+    const zip = zipInput.value.replace(/\D/g, "");
+
+    if (!firstName || !lastName || !email || !phone || !addressLine || !city || !province || !zip) {
+      showToast("Please complete the address form.");
+      return;
+    }
+
+    const addressId = addressIdInput.value || `addr-${Date.now()}`;
+    const fullName = `${firstName} ${lastName}`.trim();
+    const existingAddresses = profile.addresses.filter((item) => item.id !== addressId);
+    const nextAddress = {
+      id: addressId,
+      label: fullName,
+      fullName,
+      firstName,
+      lastName,
+      email,
+      phone,
+      addressLine,
+      city,
+      province,
+      zip,
+      isDefault: defaultCheckbox ? defaultCheckbox.checked : true
+    };
+
+    const addresses = [nextAddress, ...existingAddresses].map((item, index) => ({
+      ...item,
+      isDefault: index === 0 || (defaultCheckbox ? defaultCheckbox.checked && item.id === nextAddress.id : index === 0)
+    }));
+
+    saveProfileRecord(profile.email, {
+      ...profile,
+      fullName: profile.fullName || fullName,
+      email,
+      phone,
+      defaultAddressId: nextAddress.id,
+      addresses
+    });
+
+    renderProfilePage();
+    resetForm();
+    showToast("Address saved.");
+  };
+
+  if (profile.addresses.length > 0) {
+    loadAddressToForm(getPrimaryAddress(profile));
+  } else {
+    resetForm();
+  }
+}
+
+// Render the team member cards on the about page.
 function renderTeamOverview() {
   const grid = document.getElementById("team-grid");
   if (!grid) {
@@ -606,6 +1657,7 @@ function renderTeamOverview() {
     .join("");
 }
 
+// Render the selected team member's profile page details.
 function renderMemberProfile() {
   const wrap = document.getElementById("member-profile");
   if (!wrap) {
@@ -630,6 +1682,10 @@ function renderMemberProfile() {
     })
     .join("");
 
+  const profileNameMarkup = member.facebook
+    ? `<a href="${member.facebook}" target="_blank" rel="noopener noreferrer">${member.name}</a>`
+    : member.name;
+
   wrap.innerHTML = `
     <section class="profile-box">
       <a class="back-link" href="about.html">← Back to Team</a>
@@ -637,7 +1693,7 @@ function renderMemberProfile() {
       <div class="profile-head">
         <img src="${member.image}" alt="${member.name}" />
         <div>
-          <h2>${member.name}</h2>
+          <h2>${profileNameMarkup}</h2>
           <p class="role">${member.role}</p>
         </div>
       </div>
@@ -662,6 +1718,7 @@ function renderMemberProfile() {
   `;
 }
 
+// Update the cart and orders badges shown in the top navigation.
 function updateCountBadges() {
   const cartCount = state.cart.reduce((sum, item) => sum + item.qty, 0);
   const ordersCount = state.orders.length;
@@ -685,6 +1742,7 @@ function updateCountBadges() {
   }
 }
 
+// Re-render products when favorites or filters change.
 function rerenderProductsForCurrentPage() {
   if (page === "home") {
     renderHomeSections();
@@ -695,6 +1753,7 @@ function rerenderProductsForCurrentPage() {
   }
 }
 
+// Calculate the total cart price using saved quantities.
 function calculateCartTotal() {
   return state.cart.reduce((sum, entry) => {
     const product = state.products.find((item) => item.id === entry.id);
@@ -702,6 +1761,7 @@ function calculateCartTotal() {
   }, 0);
 }
 
+// Show a temporary message toast to the user.
 function showToast(message) {
   const toast = document.getElementById("toast");
   if (!toast) {
@@ -717,6 +1777,7 @@ function showToast(message) {
   }, 1700);
 }
 
+// Read a JSON value from localStorage with a fallback.
 function readStorage(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
@@ -726,10 +1787,177 @@ function readStorage(key, fallback) {
   }
 }
 
+// Save a JSON serializable value to localStorage.
 function saveStorage(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+// Load the current user's profile record.
+function getProfileRecord(email = state.user?.email) {
+  if (!email) {
+    return {
+      fullName: "",
+      email: "",
+      phone: "",
+      addresses: [],
+      defaultAddressId: "",
+      shippingMethod: "free",
+      paymentMethod: "card"
+    };
+  }
+
+  const record = state.profiles[email] || {};
+  return {
+    fullName: "",
+    email,
+    phone: "",
+    addresses: [],
+    defaultAddressId: "",
+    shippingMethod: "free",
+    paymentMethod: "card",
+    ...record,
+    addresses: Array.isArray(record.addresses) ? record.addresses : []
+  };
+}
+
+// Save a profile record for the current user.
+function saveProfileRecord(email, record) {
+  if (!email) {
+    return;
+  }
+
+  state.profiles[email] = {
+    ...getProfileRecord(email),
+    ...record,
+    email,
+    addresses: Array.isArray(record.addresses) ? record.addresses : getProfileRecord(email).addresses
+  };
+  saveStorage(STORAGE.profiles, state.profiles);
+}
+
+// Ensure the current user has a profile record.
+function ensureProfileRecord(user) {
+  if (!user?.email) {
+    return;
+  }
+
+  const existing = getProfileRecord(user.email);
+  saveProfileRecord(user.email, {
+    ...existing,
+    fullName: existing.fullName || user.name || "",
+    email: user.email
+  });
+}
+
+// Return the shipping option details for a given method.
+function getShippingOptionDetails(method = "free") {
+  const options = {
+    free: {
+      key: "free",
+      label: "Free Shipping",
+      fee: 0,
+      eta: "5-7 business days"
+    },
+    standard: {
+      key: "standard",
+      label: "Standard Shipping",
+      fee: 120,
+      eta: "2-4 business days"
+    }
+  };
+
+  return options[method] || options.free;
+}
+
+// Format a payment method label.
+function getPaymentLabel(method = "card") {
+  return method === "cod" ? "Cash on Delivery" : "Pay via Card";
+}
+
+// Load the saved default address from a profile record.
+function getPrimaryAddress(profile) {
+  if (!profile || !Array.isArray(profile.addresses) || profile.addresses.length === 0) {
+    return null;
+  }
+
+  return profile.addresses.find((item) => item.id === profile.defaultAddressId) || profile.addresses[0];
+}
+
+// Format an address into a single readable line.
+function formatAddressLine(address) {
+  if (!address) {
+    return "";
+  }
+
+  return [address.addressLine, address.city, address.province, address.zip]
+    .filter(Boolean)
+    .join(", ");
+}
+
+// Keep digit-only fields clean as the user types.
+function bindDigitsOnlyInputs(root) {
+  if (!root) {
+    return;
+  }
+
+  const inputs = root.querySelectorAll("[data-digits-only]");
+  for (const input of inputs) {
+    if (input.dataset.digitsBound === "true") {
+      continue;
+    }
+
+    input.dataset.digitsBound = "true";
+    input.addEventListener("input", () => {
+      input.value = input.value.replace(/\D/g, "");
+    });
+  }
+}
+
+// Fill the checkout form from the saved profile, if one exists.
+function populateCheckoutFormFromProfile() {
+  const profile = getProfileRecord();
+  const address = getPrimaryAddress(profile);
+  const firstNameInput = document.getElementById("checkout-first-name");
+  const lastNameInput = document.getElementById("checkout-last-name");
+  const emailInput = document.getElementById("checkout-email");
+  const phoneInput = document.getElementById("checkout-phone");
+  const addressInput = document.getElementById("checkout-address");
+  const cityInput = document.getElementById("checkout-city");
+  const provinceInput = document.getElementById("checkout-province");
+  const zipInput = document.getElementById("checkout-zip");
+  const shippingWrap = document.getElementById("shipping-options");
+  const paymentWrap = document.getElementById("payment-options");
+
+  state.shippingMethod = profile.shippingMethod || state.shippingMethod || "free";
+  state.paymentMethod = profile.paymentMethod || state.paymentMethod || "card";
+
+  if (address) {
+    firstNameInput.value = address.firstName || "";
+    lastNameInput.value = address.lastName || "";
+    emailInput.value = profile.email || state.user?.email || "";
+    phoneInput.value = address.phone || profile.phone || "";
+    addressInput.value = address.addressLine || "";
+    cityInput.value = address.city || "";
+    provinceInput.value = address.province || "";
+    zipInput.value = address.zip || "";
+  } else {
+    emailInput.value = profile.email || state.user?.email || "";
+  }
+
+  if (shippingWrap) {
+    for (const item of shippingWrap.querySelectorAll(".shipping-option")) {
+      item.classList.toggle("active", item.dataset.shipping === state.shippingMethod);
+    }
+  }
+
+  if (paymentWrap) {
+    for (const item of paymentWrap.querySelectorAll(".payment-option")) {
+      item.classList.toggle("active", item.dataset.payment === state.paymentMethod);
+    }
+  }
+}
+
+// Format a number as a Philippine peso amount.
 function formatPrice(value) {
   return Number(value).toLocaleString("en-PH", {
     minimumFractionDigits: 2,
@@ -737,6 +1965,7 @@ function formatPrice(value) {
   });
 }
 
+// Provide fallback product data in case the JSON file cannot be loaded.
 function getFallbackProducts() {
   return [
     {
@@ -852,6 +2081,7 @@ function getFallbackProducts() {
   ];
 }
 
+// Provide fallback team member data when the JSON file cannot be loaded.
 function getFallbackTeam() {
   return [
     {
@@ -860,6 +2090,7 @@ function getFallbackTeam() {
       role: "Frontend Designer",
       image: "assets/team-profile-img.png",
       about: "Passionate about crafting clean and thoughtful user interfaces that feel both simple and refined.",
+      facebook: "https://www.facebook.com/arizzadump",
       skills: ["UI/UX", "HTML", "CSS"],
       skillLinks: {
         "UI/UX": "https://www.figma.com/proto/vX7UiraE8mvEJfdbD20XyS/Rizze---Arizza-V.?node-id=5-6&p=f&t=8r27ZG22L3UxIEhT-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1",

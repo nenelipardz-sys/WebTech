@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rizze Beauty | Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css?v=20260417b" />
+</head>
+<body data-page="profile">
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="index.html" aria-label="Rizze Home"><img class="brand-logo" src="assets/logo%20(1).png" alt="Rizze logo" /></a>
+      <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation">Menu</button>
+      <nav class="site-nav" id="site-nav">
+        <a href="index.html">Home</a>
+        <a href="products.html">Shop</a>
+        <a href="about.html">About</a>
+      </nav>
+      <div class="nav-icons">
+        <a href="orders.html" class="nav-icon" title="Orders"><img class="nav-icon-img" src="assets/package.png" alt="Orders" /><span class="cart-badge" id="orders-count">0</span></a>
+        <a href="cart.html" class="nav-icon" title="Cart"><img class="nav-icon-img" src="assets/shopping-bag-01.png" alt="Cart" /><span class="cart-badge" id="cart-count">0</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main class="section profile-main">
+    <div class="container profile-layout">
+      <section class="profile-hero card-surface">
+        <div>
+          <p class="profile-eyebrow">Account</p>
+          <h1>Profile</h1>
+          <p>Manage your saved name, address, delivery method, and payment preferences.</p>
+        </div>
+        <div class="profile-actions">
+          <a class="btn btn-link" href="orders.html">Orders</a>
+          <button class="btn btn-dark" type="button" id="profile-signout">Sign out</button>
+        </div>
+      </section>
+
+      <section class="card-surface profile-summary-card" id="profile-account"></section>
+
+      <div class="profile-grid">
+        <section class="card-surface profile-card">
+          <div class="profile-card-head">
+            <h2>Addresses</h2>
+            <button class="link-action" type="button" id="profile-add-address">+ Add</button>
+          </div>
+          <div id="profile-address-list" class="profile-address-list"></div>
+        </section>
+
+        <section class="card-surface profile-card">
+          <div class="profile-card-head">
+            <h2 id="profile-form-title">Add address</h2>
+            <button class="link-action" type="button" id="profile-cancel-edit">Cancel</button>
+          </div>
+          <form id="profile-address-form" class="profile-form">
+            <input type="hidden" id="profile-address-id" />
+            
+            <h3>Contact Information</h3>
+            <div class="grid-2">
+              <label>First Name<input id="profile-first-name" required type="text" autocomplete="given-name" /></label>
+              <label>Last Name<input id="profile-last-name" required type="text" autocomplete="family-name" /></label>
+            </div>
+            <label>Email Address<input id="profile-email" required type="email" autocomplete="email" /></label>
+            <label>Phone Number<input id="profile-phone" data-digits-only required type="tel" inputmode="numeric" autocomplete="tel" /></label>
+
+            <h3>Shipping Address</h3>
+            <label>Address Line<input id="profile-address-line" required type="text" autocomplete="address-line1" /></label>
+            <div class="grid-3">
+              <label>City<input id="profile-city" required type="text" autocomplete="address-level2" /></label>
+              <label>Province<input id="profile-province" required type="text" autocomplete="address-level1" /></label>
+              <label>Zip Code<input id="profile-zip" data-digits-only required type="text" inputmode="numeric" autocomplete="postal-code" /></label>
+            </div>
+
+            <label class="profile-default-row"><input id="profile-set-default" type="checkbox" /> Set as default address</label>
+            <button class="btn btn-dark full" type="submit" id="profile-save-address">Save Address</button>
+          </form>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand footer-brand" href="index.html" aria-label="Rizze Home"><img class="footer-logo" src="assets/logo%20(1).png" alt="Rizze logo" /></a>
+        <p>Timeless beauty, redefined. Premium skincare and makeup for effortless sophistication.</p>
+      </div>
+      <div>
+        <h4>Shop</h4>
+        <a href="products.html">All Products</a>
+        <a href="products-skincare.html">Skincare</a>
+        <a href="products-makeup.html">Makeup</a>
+        <a href="products-fragrance.html">Fragrance</a>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <a href="about.html">About us</a>
+      </div>
+      <div>
+        <h4>Newsletter</h4>
+        <p>Join for exclusive offers and beauty tips.</p>
+        <form class="newsletter-form">
+          <input type="email" placeholder="your@email.com" />
+          <button type="button">Join</button>
+        </form>
+      </div>
+    </div>
+    <div class="copyright">© 2026 Rizzé Beauty. All rights reserved. Crafted with elegance.</div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+  <script defer src="js/app.js?v=20260417b"></script>
+</body>
+</html>

@@ -32,6 +32,11 @@
         <div class="cart-line-items" id="cart-items"></div>
 
         <aside class="order-summary-card" id="cart-summary">
+          <a class="checkout-customer-summary cart-customer-summary hidden" id="cart-customer-summary" href="profile.html"></a>
+
+          <div class="cart-method-card hidden" id="cart-shipping-card"></div>
+          <div class="cart-method-card hidden" id="cart-payment-card"></div>
+
           <h3>Order Summary</h3>
           <div class="summary-row"><span>Subtotal</span><strong id="subtotal-price">₱ 0.00</strong></div>
           <div class="summary-row"><span>Shipping</span><strong>Free</strong></div>
@@ -78,6 +83,42 @@
   </footer>
 
   <div class="toast" id="toast"></div>
+  <!-- Online payment modal (appears when Online Payment is selected) -->
+  <div class="modal payment-modal" id="payment-modal" aria-hidden="true">
+    <div class="modal-panel">
+      <button class="modal-close" id="payment-modal-close" aria-label="Close">×</button>
+      <h3>Online Payment</h3>
+      <form id="payment-form">
+        <div class="field">
+          <label>Cardholder Name
+            <input id="card-name" type="text" required placeholder="Full name on card" />
+          </label>
+        </div>
+        <div class="field">
+          <label>Card Number
+            <input id="card-number" type="text" inputmode="numeric" maxlength="19" required placeholder="1234 5678 9012 3456" />
+          </label>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Expiry
+              <input id="card-exp" type="text" placeholder="MM/YY" required />
+            </label>
+          </div>
+          <div class="field">
+            <label>CVV
+              <input id="card-cvv" type="text" inputmode="numeric" maxlength="4" required placeholder="123" />
+            </label>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn btn-dark">Pay Now</button>
+          <button type="button" class="btn" id="payment-cancel">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script defer src="js/app.js?v=20260417b"></script>
 </body>
 </html>
