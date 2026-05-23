@@ -2,15 +2,45 @@
   {
     "id": "arizza",
     "name": "Arizza L. Villareal",
-    "role": "Frontend Designer",
-    "image": "assets/team-profile-img.png",
-    "about": "Passionate about crafting clean and thoughtful user interfaces that feel both simple and refined.",
-    "skills": ["UI/UX", "HTML", "CSS"],
+    "role": "Founder Designer",
+    "roleLabel": "Founder Designer",
+    "image": "assets/3fc9d038-6ae1-4129-b199-0ffc0dafc401.jpg",
+    "cardImage": "assets/team-profile-img.png",
+    "heroTitle": "Hi, I am Arizza",
+    "heroSubtitle": "Aspiring Web and Mobile Developer · Content Creator · Editor",
+    "heroCopy": "I create beautiful, functional, and user-friendly digital experiences. Passionate about turning ideas into reality through clean code and innovative design.",
+    "about": "I’m Arizza — passionate about technology, creativity, and building digital ideas into real-world solutions.",
+    "aboutDetail": "I help beauty, lifestyle, and digital brands tell stories that feel authentic, trendy, and engaging through creative content and aesthetic visuals.",
+    "aboutExtra": "From social media captions and blog posts to polished long-form content, I create work that connects with people and helps brands build a strong online presence.",
+    "aboutImage": "assets/616d6724-dba3-40b2-a6bf-82e3ea0df06b.jpg",
+    "whyImage": "assets/fcf4c8e1-c171-44d2-893f-5796e9f8f0cc.jpg",
+    "contactCopy": "Whether you need a creative website, a modern mobile app, or a developer who genuinely cares about quality and user experience — I’d love to help bring your ideas to life.",
+    "facebook": "https://www.facebook.com/arizzadump",
+    "projectLink": "https://www.figma.com/proto/vX7UiraE8mvEJfdbD20XyS/Rizze---Arizza-V.?node-id=5-6&p=f&t=8r27ZG22L3UxIEhT-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1",
+    "skills": ["UI/UX", "WEB", "HTML", "CSS"],
     "skillLinks": {
       "UI/UX": "https://www.figma.com/proto/vX7UiraE8mvEJfdbD20XyS/Rizze---Arizza-V.?node-id=5-6&p=f&t=8r27ZG22L3UxIEhT-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1",
       "HTML": "https://github.com/nenelipardz-sys/WebTech.git",
       "CSS": "https://github.com/nenelipardz-sys/WebTech.git"
     },
+    "values": [
+      {
+        "title": "Explorative & Passionate",
+        "description": "I enjoy exploring technology while building — projects don’t feel repetitive, they evolve."
+      },
+      {
+        "title": "Fast Learner & Adaptable",
+        "description": "I adjust quickly to new stacks and environments even if they are unfamiliar at first."
+      },
+      {
+        "title": "AI-Enhanced, Quality-Driven",
+        "description": "I use AI wisely to accelerate development without sacrificing craftsmanship."
+      },
+      {
+        "title": "Client Satisfaction Focus",
+        "description": "I prioritize clear communication, polished results, and making sure clients are happy with the final outcome."
+      }
+    ],
     "contribution": "Led the visual design direction, creating the overall aesthetic and component designs that define Rizze Beauty's luxurious look and feel."
   },
   {

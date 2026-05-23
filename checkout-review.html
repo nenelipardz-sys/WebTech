@@ -1,16 +1,16 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rizze Beauty | Shopping Cart</title>
+  <title>Rizze Beauty | Checkout Review</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css?v=20260417b" />
 </head>
-<body data-page="cart">
-    <header class="site-header">
+<body data-page="checkout-review">
+  <header class="site-header">
     <div class="container nav-wrap">
       <a class="brand" href="index.html" aria-label="Rizze Home"><img class="brand-logo" src="assets/logo%20(1).png" alt="Rizze logo" /></a>
       <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation">Menu</button>
@@ -26,25 +26,23 @@
     </div>
   </header>
 
-  <main class="section cart-main">
+  <main class="section checkout-main">
     <div class="container">
-      <section id="cart-filled" class="cart-layout shop-cart-layout">
-        <div class="cart-line-items" id="cart-items"></div>
+      <a class="back-link" href="cart.html">← Back to Cart</a>
+      <h1 class="page-title">Checkout</h1>
 
-        <aside class="order-summary-card" id="cart-summary">
-          <h3>Order Summary</h3>
-          <div class="summary-row"><span>Subtotal</span><strong id="subtotal-price">₱ 0.00</strong></div>
-          <div class="summary-row"><span>Shipping</span><strong>Free</strong></div>
-          <div class="summary-row total"><span>TOTAL</span><strong id="cart-total">₱ 0.00</strong></div>
-          <button class="btn btn-dark full" id="checkout-btn">Proceed to Checkout</button>
+      <div class="checkout-layout">
+        <div class="checkout-side">
+          <a class="checkout-customer-summary is-empty" id="checkout-review-customer-summary" href="profile.html"></a>
+          <div class="cart-method-card" id="review-shipping-card"></div>
+          <div class="cart-method-card" id="review-payment-card"></div>
+        </div>
+
+        <aside class="checkout-side">
+          <div class="order-summary-card" id="checkout-review-summary"></div>
+          <button class="btn btn-dark full" id="checkout-review-continue" type="button">Continue</button>
         </aside>
-      </section>
-
-      <section id="cart-empty" class="empty-cart-state hidden">
-        <h2>Your Cart is Empty</h2>
-        <p>Discover our collection and find something you love.</p>
-        <a class="btn btn-dark" href="products.html">Continue Shopping &rarr;</a>
-      </section>
+      </div>
     </div>
   </main>
 
@@ -78,7 +76,6 @@
   </footer>
 
   <div class="toast" id="toast"></div>
-  <!-- Online payment modal (appears when Online Payment is selected) -->
   <div class="modal payment-modal" id="payment-modal" aria-hidden="true">
     <div class="modal-panel">
       <button class="modal-close" id="payment-modal-close" aria-label="Close">×</button>
@@ -113,12 +110,6 @@
       </form>
     </div>
   </div>
-
   <script defer src="js/app.js?v=20260417b"></script>
 </body>
 </html>
-
-
-
-
-

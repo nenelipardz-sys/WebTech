@@ -118,6 +118,9 @@
           <h4>Testimonials</h4>
           <p>Trusted reviews and ratings from our loyal clients</p>
         </div>
+        <div class="centered" style="margin-top:1rem;">
+          <button id="write-review-btn" class="btn btn-dark">Write a review</button>
+        </div>
         <div class="testimonial-summary-grid">
           <article class="stats-card">
             <div class="rating-row">
@@ -207,6 +210,34 @@
 
   <div class="modal" id="product-modal" aria-hidden="true">
     <div class="modal-content" id="product-modal-content"></div>
+  </div>
+  <!-- Review modal -->
+  <div class="modal" id="review-modal" aria-hidden="true">
+    <div class="modal-content review-modal-content">
+      <button class="modal-close" id="review-modal-close" aria-label="Close">×</button>
+      <h2>Write a review</h2>
+      <form id="review-form">
+        <div class="form-group">
+          <label>Name<input id="review-name" type="text" required /></label>
+        </div>
+        <div class="form-group">
+          <label>Rating
+            <input id="review-rating" type="hidden" value="5" />
+            <div id="star-selector" class="star-selector">
+              <button type="button" class="star-btn" data-rating="1">★</button>
+              <button type="button" class="star-btn" data-rating="2">★</button>
+              <button type="button" class="star-btn" data-rating="3">★</button>
+              <button type="button" class="star-btn" data-rating="4">★</button>
+              <button type="button" class="star-btn" data-rating="5">★</button>
+            </div>
+          </label>
+        </div>
+        <div class="form-group">
+          <label>Review<textarea id="review-text" rows="4" required></textarea></label>
+        </div>
+        <button class="btn btn-dark" type="submit">Submit review</button>
+      </form>
+    </div>
   </div>
   <div class="toast" id="toast"></div>
   <script defer src="js/app.js?v=20260417b"></script>

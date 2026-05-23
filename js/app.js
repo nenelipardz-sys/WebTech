@@ -172,6 +172,23 @@ function getRedirectTarget(defaultTarget = "index.html") {
   return params.get("redirect") || defaultTarget;
 }
 
+// Check whether the current user has already placed at least one order.
+function hasPreviousOrder() {
+  return Boolean(state.user?.email) && state.orders.some((order) => order.userEmail === state.user.email);
+}
+
+// Decide whether cart checkout should use the saved-profile review page.
+function getCartCheckoutTarget() {
+  const profile = getProfileRecord();
+  const hasSavedAddress = Boolean(getPrimaryAddress(profile));
+
+  if (isAuthenticated() && hasSavedAddress && hasPreviousOrder()) {
+    return "checkout-review.html";
+  }
+
+  return "checkout.html";
+}
+
 // Navigate to the sign-in page and preserve the return target.
 function redirectToSignin(target = "checkout.html") {
   window.location.href = `signin.html?redirect=${encodeURIComponent(target)}`;
@@ -241,6 +258,27 @@ async function init() {
 
     renderCheckoutPage();
     setupCheckout();
+  }
+
+  if (page === "checkout-review") {
+    if (!isAuthenticated()) {
+      redirectToSignin("checkout-review.html");
+      return;
+    }
+
+    const profile = getProfileRecord();
+    if (!state.cart || state.cart.length === 0) {
+      window.location.href = "cart.html";
+      return;
+    }
+
+    if (!getPrimaryAddress(profile) || !hasPreviousOrder()) {
+      window.location.href = "checkout.html";
+      return;
+    }
+
+    renderCheckoutReviewPage();
+    setupCheckoutReview();
   }
 
   if (page === "login") {
@@ -803,9 +841,6 @@ function renderCartPage() {
   const subtotalNode = document.getElementById("subtotal-price");
   const totalNode = document.getElementById("cart-total");
   const checkoutBtn = document.getElementById("checkout-btn");
-  const customerSummary = document.getElementById("cart-customer-summary");
-  const shippingCard = document.getElementById("cart-shipping-card");
-  const paymentCard = document.getElementById("cart-payment-card");
 
   if (!filled || !empty || !itemsWrap || !subtotalNode || !totalNode || !checkoutBtn) {
     return;
@@ -821,181 +856,11 @@ function renderCartPage() {
   if (detailedItems.length === 0) {
     filled.classList.add("hidden");
     empty.classList.remove("hidden");
-    if (customerSummary) customerSummary.classList.add("hidden");
-    if (shippingCard) shippingCard.classList.add("hidden");
-    if (paymentCard) paymentCard.classList.add("hidden");
     return;
   }
 
   filled.classList.remove("hidden");
   empty.classList.add("hidden");
-
-  const profile = isAuthenticated() ? getProfileRecord() : null;
-  const address = profile ? getPrimaryAddress(profile) : null;
-  state.shippingMethod = profile?.shippingMethod || state.shippingMethod || "free";
-  state.paymentMethod = profile?.paymentMethod || state.paymentMethod || "card";
-  // Render customer summary, shipping and payment cards on cart page
-  const shipping = getShippingOptionDetails(state.shippingMethod);
-
-  if (customerSummary) {
-    if (address) {
-      customerSummary.classList.remove("hidden");
-      customerSummary.href = "profile.html";
-      customerSummary.innerHTML = `
-        <span class="checkout-customer-label">Saved profile</span>
-        <strong>${address.fullName} | ${address.phone}</strong>
-        <p>${formatAddressLine(address)}</p>
-      `;
-      // open profile when clicked (anchor already points to profile.html)
-    } else {
-      customerSummary.classList.add("hidden");
-      customerSummary.innerHTML = "";
-    }
-  }
-
-  if (shippingCard) {
-    if (address) {
-      shippingCard.classList.remove("hidden");
-      const freeOpt = getShippingOptionDetails("free");
-      const stdOpt = getShippingOptionDetails("standard");
-      shippingCard.innerHTML = `
-        <div class="method-head">Shipping</div>
-        <div class="method-body shipping-options">
-          <button class="btn shipping-option ${state.shippingMethod === "free" ? "active" : ""}" data-shipping="free">
-            <div class="opt-title">${freeOpt.label}</div>
-            <div class="opt-meta">${freeOpt.fee > 0 ? `P ${formatPrice(freeOpt.fee)}` : "Free"} · ${freeOpt.eta}</div>
-          </button>
-          <button class="btn shipping-option ${state.shippingMethod === "standard" ? "active" : ""}" data-shipping="standard">
-            <div class="opt-title">${stdOpt.label}</div>
-            <div class="opt-meta">P ${formatPrice(stdOpt.fee)} · ${stdOpt.eta}</div>
-          </button>
-        </div>
-      `;
-
-      shippingCard.onclick = (e) => {
-        const btn = e.target.closest("button[data-shipping]");
-        if (!btn) return;
-        const sel = btn.dataset.shipping;
-        state.shippingMethod = sel;
-        const profile = getProfileRecord();
-        if (profile) {
-          profile.shippingMethod = sel;
-          saveProfileRecord(profile.email, profile);
-        }
-        // toggle active classes
-        shippingCard.querySelectorAll("button[data-shipping]").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-
-        // update cart summary shipping and total
-        const subtotal = calculateCartTotal();
-        const shippingFee = getShippingOptionDetails(state.shippingMethod).fee;
-        const total = subtotal + shippingFee;
-        const cartSummaryEl = document.getElementById("cart-summary");
-        if (cartSummaryEl) {
-          const rows = Array.from(cartSummaryEl.querySelectorAll(".summary-row"));
-          const shipRow = rows.find((r) => r.querySelector("span") && r.querySelector("span").textContent.trim() === "Shipping");
-          if (shipRow) {
-            shipRow.querySelector("strong").textContent = shippingFee > 0 ? `P ${formatPrice(shippingFee)}` : "Free";
-          }
-        }
-        const totalNode = document.getElementById("cart-total");
-        if (totalNode) totalNode.textContent = `₱ ${formatPrice(total)}`;
-      };
-    } else {
-      shippingCard.classList.add("hidden");
-      shippingCard.innerHTML = "";
-    }
-  }
-
-  if (paymentCard) {
-    if (address) {
-      paymentCard.classList.remove("hidden");
-      paymentCard.innerHTML = `
-        <div class="method-head">Payment Method</div>
-        <div class="method-body payment-options">
-          <button class="btn payment-option ${state.paymentMethod === "card" ? "active" : ""}" data-payment="card">
-            <div class="opt-title">Online Payment</div>
-            <div class="opt-meta">Debit / Credit card</div>
-          </button>
-          <button class="btn payment-option ${state.paymentMethod === "cod" ? "active" : ""}" data-payment="cod">
-            <div class="opt-title">Cash on Delivery</div>
-            <div class="opt-meta">Pay when you receive</div>
-          </button>
-        </div>
-      `;
-
-      // wire payment option clicks and modal
-      const paymentModal = document.getElementById("payment-modal");
-      const paymentModalClose = document.getElementById("payment-modal-close");
-      const paymentCancel = document.getElementById("payment-cancel");
-      const paymentForm = document.getElementById("payment-form");
-
-      function openPaymentModal() {
-        if (!paymentModal) return;
-        paymentModal.classList.add("show");
-        paymentModal.setAttribute("aria-hidden", "false");
-      }
-      function closePaymentModal() {
-        if (!paymentModal) return;
-        paymentModal.classList.remove("show");
-        paymentModal.setAttribute("aria-hidden", "true");
-      }
-
-      if (paymentModalClose) paymentModalClose.onclick = closePaymentModal;
-      if (paymentCancel) paymentCancel.onclick = closePaymentModal;
-
-      paymentCard.onclick = (e) => {
-        const btn = e.target.closest("button[data-payment]");
-        if (!btn) return;
-        const sel = btn.dataset.payment;
-        const profile = getProfileRecord();
-        if (sel === "card") {
-          // open card entry modal
-          openPaymentModal();
-        } else {
-          // choose COD
-          state.paymentMethod = sel;
-          if (profile) {
-            profile.paymentMethod = sel;
-            saveProfileRecord(profile.email, profile);
-          }
-          // toggle active classes
-          paymentCard.querySelectorAll("button[data-payment]").forEach((b) => b.classList.remove("active"));
-          btn.classList.add("active");
-        }
-      };
-
-      if (paymentForm) {
-        paymentForm.onsubmit = (ev) => {
-          ev.preventDefault();
-          const cardName = document.getElementById("card-name")?.value.trim();
-          const cardNumber = document.getElementById("card-number")?.value.replace(/\s+/g, "");
-          const cardExp = document.getElementById("card-exp")?.value.trim();
-          const cardCvv = document.getElementById("card-cvv")?.value.trim();
-          if (!cardName || !cardNumber || cardNumber.length < 12 || !cardExp || !cardCvv || cardCvv.length < 3) {
-            showToast("Please complete card details.");
-            return;
-          }
-          // record selection as card
-          state.paymentMethod = "card";
-          const profile = getProfileRecord();
-          if (profile) {
-            profile.paymentMethod = "card";
-            saveProfileRecord(profile.email, profile);
-          }
-          // close modal and mark active
-          closePaymentModal();
-          paymentCard.querySelectorAll("button[data-payment]").forEach((b) => b.classList.remove("active"));
-          const active = paymentCard.querySelector("button[data-payment=\"card\"]");
-          if (active) active.classList.add("active");
-          showToast("Payment method saved.");
-        };
-      }
-    } else {
-      paymentCard.classList.add("hidden");
-      paymentCard.innerHTML = "";
-    }
-  }
 
   itemsWrap.innerHTML = detailedItems
     .map(
@@ -1018,7 +883,7 @@ function renderCartPage() {
     .join("");
 
   const subtotal = calculateCartTotal();
-  const shippingFee = address ? getShippingOptionDetails(state.shippingMethod).fee : 0;
+  const shippingFee = 0;
   const total = subtotal + shippingFee;
   subtotalNode.textContent = `₱ ${formatPrice(subtotal)}`;
   // update shipping line inside cart summary if present
@@ -1068,18 +933,7 @@ function renderCartPage() {
       showToast('Cart is empty');
       return;
     }
-    // If user already has a saved address and has selected shipping & payment on cart page,
-    // allow placing the order directly from cart (second-order quick flow).
-    const profileRec = getProfileRecord();
-    const primaryAddr = getPrimaryAddress(profileRec);
-    if (primaryAddr && state.shippingMethod && state.paymentMethod) {
-      // try create order immediately
-      createOrderFromCart(primaryAddr);
-      return;
-    }
-
-    // Redirect to checkout page where user fills in address and payment details
-    window.location.href = "checkout.html";
+    window.location.href = getCartCheckoutTarget();
   };
 }
 
@@ -1214,6 +1068,244 @@ function renderCheckoutPage() {
       customerSummary.innerHTML = ``;
     }
   }
+}
+
+// Render the saved-profile review page for returning customers.
+function renderCheckoutReviewPage() {
+  const summary = document.getElementById("checkout-review-summary");
+  const customerSummary = document.getElementById("checkout-review-customer-summary");
+  const shippingCard = document.getElementById("review-shipping-card");
+  const paymentCard = document.getElementById("review-payment-card");
+  const continueBtn = document.getElementById("checkout-review-continue");
+
+  if (!summary || !customerSummary || !shippingCard || !paymentCard || !continueBtn) {
+    return;
+  }
+
+  const profile = getProfileRecord();
+  const primaryAddress = getPrimaryAddress(profile);
+  const shipping = getShippingOptionDetails(profile.shippingMethod || state.shippingMethod);
+  const paymentMethod = profile.paymentMethod || state.paymentMethod || "card";
+
+  state.shippingMethod = shipping.key;
+  state.paymentMethod = paymentMethod;
+
+  if (primaryAddress) {
+    customerSummary.classList.remove("is-empty");
+    customerSummary.href = "profile.html";
+    customerSummary.innerHTML = `
+      <span class="checkout-customer-label">Saved profile</span>
+      <strong>${primaryAddress.fullName || profile.fullName || state.user?.name || "Customer"} | ${primaryAddress.phone || profile.phone || ""}</strong>
+      <p>${formatAddressLine(primaryAddress)}</p>
+    `;
+  }
+
+  const freeShipping = getShippingOptionDetails("free");
+  const standardShipping = getShippingOptionDetails("standard");
+
+  shippingCard.innerHTML = `
+    <div class="method-card-title">Shipping</div>
+    <div class="method-list">
+      <button class="method-option ${state.shippingMethod === "free" ? "active" : ""}" type="button" data-shipping="free">
+        <strong>${freeShipping.label}</strong>
+        <span>Free · ${freeShipping.eta}</span>
+      </button>
+      <button class="method-option ${state.shippingMethod === "standard" ? "active" : ""}" type="button" data-shipping="standard">
+        <strong>${standardShipping.label}</strong>
+        <span>P ${formatPrice(standardShipping.fee)} · ${standardShipping.eta}</span>
+      </button>
+    </div>
+  `;
+
+  paymentCard.innerHTML = `
+    <div class="method-card-title">Payment Method</div>
+    <div class="method-list">
+      <button class="method-option ${paymentMethod === "card" ? "active" : ""}" type="button" data-payment="card">
+        <strong>Online Payment</strong>
+        <span>Debit / Credit card</span>
+      </button>
+      <button class="method-option ${paymentMethod === "cod" ? "active" : ""}" type="button" data-payment="cod">
+        <strong>Cash on Delivery</strong>
+        <span>Pay when you receive</span>
+      </button>
+    </div>
+  `;
+
+  const cartDetails = state.cart
+    .map((entry) => {
+      const product = state.products.find((item) => item.id === entry.id);
+      return product ? { ...product, qty: entry.qty } : null;
+    })
+    .filter(Boolean);
+
+  const subtotal = calculateCartTotal();
+  const total = subtotal + shipping.fee;
+
+  summary.innerHTML = `
+    <h3>Order Summary</h3>
+    ${cartDetails
+      .map(
+        (item) => `
+      <div class="checkout-item">
+        <img src="${item.image}" alt="${item.name}" />
+        <div>
+          <strong>${item.name}</strong>
+          <p>QTY: ${item.qty}</p>
+        </div>
+        <strong>P ${formatPrice(item.price * item.qty)}</strong>
+      </div>
+    `
+      )
+      .join("")}
+    <div class="summary-row"><span>Subtotal</span><strong>P ${formatPrice(subtotal)}</strong></div>
+    <div class="summary-row"><span>Shipping</span><strong>${shipping.label} - P ${formatPrice(shipping.fee)}</strong></div>
+    <div class="summary-row"><span>Delivery</span><strong>${shipping.eta}</strong></div>
+    <div class="summary-row total"><span>Total</span><strong>P ${formatPrice(total)}</strong></div>
+  `;
+
+  continueBtn.textContent = `Continue - P ${formatPrice(total)}`;
+}
+
+// Set up the saved-profile review page interactions and order placement.
+function setupCheckoutReview() {
+  const shippingCard = document.getElementById("review-shipping-card");
+  const paymentCard = document.getElementById("review-payment-card");
+  const continueBtn = document.getElementById("checkout-review-continue");
+  const paymentModal = document.getElementById("payment-modal");
+  const paymentModalClose = document.getElementById("payment-modal-close");
+  const paymentCancel = document.getElementById("payment-cancel");
+  const paymentForm = document.getElementById("payment-form");
+
+  if (!shippingCard || !paymentCard || !continueBtn) {
+    return;
+  }
+
+  function openPaymentModal() {
+    if (!paymentModal) {
+      return;
+    }
+
+    paymentModal.classList.add("show");
+    paymentModal.setAttribute("aria-hidden", "false");
+  }
+
+  function closePaymentModal() {
+    if (!paymentModal) {
+      return;
+    }
+
+    paymentModal.classList.remove("show");
+    paymentModal.setAttribute("aria-hidden", "true");
+  }
+
+  if (paymentModalClose) {
+    paymentModalClose.onclick = closePaymentModal;
+  }
+
+  if (paymentCancel) {
+    paymentCancel.onclick = closePaymentModal;
+  }
+
+  shippingCard.onclick = (event) => {
+    const option = event.target.closest("button[data-shipping]");
+    if (!option) {
+      return;
+    }
+
+    state.shippingMethod = option.dataset.shipping;
+    const profile = getProfileRecord();
+    if (profile) {
+      saveProfileRecord(profile.email, {
+        ...profile,
+        shippingMethod: state.shippingMethod
+      });
+    }
+    renderCheckoutReviewPage();
+  };
+
+  paymentCard.onclick = (event) => {
+    const option = event.target.closest("button[data-payment]");
+    if (!option) {
+      return;
+    }
+
+    const selectedPayment = option.dataset.payment;
+
+    if (selectedPayment === "card") {
+      openPaymentModal();
+      return;
+    }
+
+    state.paymentMethod = selectedPayment;
+    const profile = getProfileRecord();
+    if (profile) {
+      saveProfileRecord(profile.email, {
+        ...profile,
+        paymentMethod: state.paymentMethod
+      });
+    }
+    renderCheckoutReviewPage();
+  };
+
+  if (paymentForm) {
+    paymentForm.onsubmit = (event) => {
+      event.preventDefault();
+
+      const cardName = document.getElementById("card-name")?.value.trim();
+      const cardNumber = document.getElementById("card-number")?.value.replace(/\s+/g, "");
+      const cardExp = document.getElementById("card-exp")?.value.trim();
+      const cardCvv = document.getElementById("card-cvv")?.value.trim();
+
+      if (!cardName || !cardNumber || cardNumber.length < 12 || !cardExp || !cardCvv || cardCvv.length < 3) {
+        showToast("Please complete card details.");
+        return;
+      }
+
+      state.paymentMethod = "card";
+      const profile = getProfileRecord();
+      if (profile) {
+        saveProfileRecord(profile.email, {
+          ...profile,
+          paymentMethod: "card"
+        });
+      }
+
+      closePaymentModal();
+      paymentCard.querySelectorAll("button[data-payment]").forEach((button) => button.classList.remove("active"));
+      const active = paymentCard.querySelector('button[data-payment="card"]');
+      if (active) {
+        active.classList.add("active");
+      }
+
+      showToast("Payment method saved.");
+      renderCheckoutReviewPage();
+    };
+  }
+
+  continueBtn.onclick = () => {
+    if (!isAuthenticated() || !state.user?.email) {
+      showToast("Please sign in to complete checkout.");
+      redirectToSignin("checkout-review.html");
+      return;
+    }
+
+    const profile = getProfileRecord();
+    const primaryAddress = getPrimaryAddress(profile);
+
+    if (!primaryAddress) {
+      showToast("Please save a profile address first.");
+      window.location.href = "checkout.html";
+      return;
+    }
+
+    saveProfileRecord(profile.email, {
+      ...profile,
+      shippingMethod: state.shippingMethod,
+      paymentMethod: state.paymentMethod
+    });
+
+    createOrderFromCart(primaryAddress);
+  };
 }
 
 // Set up checkout payment option controls and order submission.
@@ -1646,7 +1738,7 @@ function renderTeamOverview() {
     .map(
       (member) => `
       <article class="team-card">
-        <img class="team-photo" src="${member.image}" alt="${member.name}" />
+        <img class="team-photo" src="${member.cardImage || member.image}" alt="${member.name}" />
         <h3>${member.name}</h3>
         <p class="role">${member.role}</p>
         <p>${member.about}</p>
@@ -1675,10 +1767,11 @@ function renderMemberProfile() {
   const skillTagsMarkup = member.skills
     .map((skill) => {
       const link = member.skillLinks && member.skillLinks[skill];
+      const isAnchor = typeof link === "string" && link.startsWith("#");
       if (!link) {
         return `<span>${skill}</span>`;
       }
-      return `<a href="${link}" target="_blank" rel="noopener noreferrer">${skill}</a>`;
+      return `<a href="${link}" ${isAnchor ? "" : "target=\"_blank\" rel=\"noopener noreferrer\""}>${skill}</a>`;
     })
     .join("");
 
@@ -1686,33 +1779,80 @@ function renderMemberProfile() {
     ? `<a href="${member.facebook}" target="_blank" rel="noopener noreferrer">${member.name}</a>`
     : member.name;
 
+  const valuesMarkup = (member.values || [])
+    .map(
+      (value) => `
+        <article class="profile-feature-card">
+          <h4>${value.title}</h4>
+          <p>${value.description}</p>
+        </article>
+      `
+    )
+    .join("");
+
   wrap.innerHTML = `
     <section class="profile-box">
       <a class="back-link" href="about.html">← Back to Team</a>
 
-      <div class="profile-head">
-        <img src="${member.image}" alt="${member.name}" />
-        <div>
-          <h2>${profileNameMarkup}</h2>
-          <p class="role">${member.role}</p>
+      <div class="profile-hero card-surface">
+        <div class="profile-intro">
+          <p class="profile-eyebrow">Creating Digital Experiences</p>
+          <h1>${member.heroTitle || `Hi, I am ${member.name.split(" ")[0]}`}</h1>
+          <p class="profile-name">${member.name}</p>
+          <p class="profile-role-summary">${member.role}</p>
+          <p class="profile-lead">${member.heroSubtitle || "Aspiring Web and Mobile Developer · Content Creator · Editor"}</p>
+          <p class="profile-copy">${member.heroCopy || "I create beautiful, functional, and user-friendly digital experiences. Passionate about turning ideas into reality through clean code and innovative design."}</p>
+          <div class="profile-actions">
+            ${member.projectLink ? `<a class="profile-button" href="${member.projectLink}" target="_blank" rel="noopener noreferrer">View Projects</a>` : ""}
+            ${member.facebook ? `<a class="profile-button secondary" href="${member.facebook}" target="_blank" rel="noopener noreferrer">Contact Me</a>` : ""}
+          </div>
         </div>
+        <figure class="profile-figure">
+          <img src="${member.image}" alt="${member.name}" />
+        </figure>
       </div>
 
-      <div class="profile-block">
-        <h3>About</h3>
-        <p>${member.about}</p>
-      </div>
-
-      <div class="profile-block">
-        <h3>Skills</h3>
-        <div class="skill-tags">
-          ${skillTagsMarkup}
+      <div class="profile-details">
+        <div class="profile-block profile-about-grid">
+          <div class="profile-about-image">
+            <img src="${member.aboutImage || member.image}" alt="${member.name}" />
+          </div>
+          <div class="profile-about-copy">
+            <h3>Who I am</h3>
+            <p>${member.about || "I’m passionate about technology, creativity, and building digital ideas into real-world solutions."}</p>
+            <p>${member.aboutDetail || "I help beauty, lifestyle, and digital brands tell stories that feel authentic, trendy, and engaging through creative content and aesthetic visuals."}</p>
+            <p>${member.aboutExtra || "From social media captions and blog posts to polished long-form content, I create work that connects with people and helps brands build a strong online presence."}</p>
+          </div>
         </div>
-      </div>
 
-      <div class="profile-block">
-        <h3>Project Contribution</h3>
-        <p>${member.contribution}</p>
+        <div class="profile-block" id="skills">
+          <h3>Skills & Role</h3>
+          <div class="skill-tags">
+            ${skillTagsMarkup}
+          </div>
+          <p class="profile-meta"><strong>Role:</strong> ${member.role}</p>
+        </div>
+
+        <div class="profile-block profile-why-grid">
+          <div>
+            <h3>Why Choose Me</h3>
+            <div class="profile-features">
+              ${valuesMarkup}
+            </div>
+          </div>
+          <div class="profile-why-image">
+            <img src="${member.whyImage || member.aboutImage || member.image}" alt="Why choose me" />
+          </div>
+        </div>
+
+        <div class="profile-block profile-contact-card">
+          <h3>Let’s build something amazing together</h3>
+          <p>${member.contactCopy || "Whether you need a creative website, a modern mobile app, or a developer who genuinely cares about quality and user experience — I’d love to help bring your ideas to life."}</p>
+          <div class="profile-actions">
+            ${member.projectLink ? `<a class="profile-button" href="${member.projectLink}" target="_blank" rel="noopener noreferrer">View Projects</a>` : ""}
+            ${member.facebook ? `<a class="profile-button secondary" href="${member.facebook}" target="_blank" rel="noopener noreferrer">Message on Facebook</a>` : ""}
+          </div>
+        </div>
       </div>
     </section>
   `;
@@ -2087,16 +2227,43 @@ function getFallbackTeam() {
     {
       id: "arizza",
       name: "Arizza L. Villareal",
-      role: "Frontend Designer",
+      role: "Founder Designer",
+      roleLabel: "Founder Designer",
       image: "assets/team-profile-img.png",
-      about: "Passionate about crafting clean and thoughtful user interfaces that feel both simple and refined.",
+      cardImage: "assets/team-profile-img.png",
+      heroTitle: "Hi, I am Arizza",
+      heroSubtitle: "Aspiring Web and Mobile Developer · Content Creator · Editor",
+      heroCopy: "I create beautiful, functional, and user-friendly digital experiences. Passionate about turning ideas into reality through clean code and innovative design.",
+      about: "I’m Arizza — passionate about technology, creativity, and building digital ideas into real-world solutions.",
+      aboutDetail: "I help beauty, lifestyle, and digital brands tell stories that feel authentic, trendy, and engaging through creative content and aesthetic visuals.",
+      aboutExtra: "From social media captions and blog posts to polished long-form content, I create work that connects with people and helps brands build a strong online presence.",
+      contactCopy: "Whether you need a creative website, a modern mobile app, or a developer who genuinely cares about quality and user experience — I’d love to help bring your ideas to life.",
       facebook: "https://www.facebook.com/arizzadump",
-      skills: ["UI/UX", "HTML", "CSS"],
+      projectLink: "https://www.figma.com/proto/vX7UiraE8mvEJfdbD20XyS/Rizze---Arizza-V.?node-id=5-6&p=f&t=8r27ZG22L3UxIEhT-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1",
+      skills: ["UI/UX", "WEB", "HTML", "CSS"],
       skillLinks: {
         "UI/UX": "https://www.figma.com/proto/vX7UiraE8mvEJfdbD20XyS/Rizze---Arizza-V.?node-id=5-6&p=f&t=8r27ZG22L3UxIEhT-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1",
         HTML: "https://github.com/nenelipardz-sys/WebTech.git",
         CSS: "https://github.com/nenelipardz-sys/WebTech.git"
       },
+      values: [
+        {
+          title: "Explorative & Passionate",
+          description: "I enjoy exploring technology while building — projects don’t feel repetitive, they evolve."
+        },
+        {
+          title: "Fast Learner & Adaptable",
+          description: "I adjust quickly to new stacks and environments even if they are unfamiliar at first."
+        },
+        {
+          title: "AI-Enhanced, Quality-Driven",
+          description: "I use AI wisely to accelerate development without sacrificing craftsmanship."
+        },
+        {
+          title: "Client Satisfaction Focus",
+          description: "I prioritize clear communication, polished results, and making sure clients are happy with the final outcome."
+        }
+      ],
       contribution: "Led the visual design direction, creating the overall aesthetic and component designs that define Rizze Beauty's luxurious look and feel."
     },
     {
