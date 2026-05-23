@@ -1741,7 +1741,7 @@ function renderTeamOverview() {
         <img class="team-photo" src="${member.cardImage || member.image}" alt="${member.name}" />
         <h3>${member.name}</h3>
         <p class="role">${member.role}</p>
-        <p>${member.about}</p>
+        <p>${member.cardAbout || member.about}</p>
         <a class="view-profile" href="${MEMBER_PAGE[member.id] || "member-arizza.html"}">View Profile →</a>
       </article>
     `
