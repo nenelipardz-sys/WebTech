@@ -10,6 +10,7 @@
     "heroSubtitle": "Aspiring Web and Mobile Developer · Content Creator · Editor",
     "heroCopy": "I create beautiful, functional, and user-friendly digital experiences. Passionate about turning ideas into reality through clean code and innovative design.",
     "about": "I’m Arizza — passionate about technology, creativity, and building digital ideas into real-world solutions.",
+    "cardAbout": "Passionate about crafting clean and thoughtful user interfaces that feel both simple and refined.",
     "aboutDetail": "I help beauty, lifestyle, and digital brands tell stories that feel authentic, trendy, and engaging through creative content and aesthetic visuals.",
     "aboutExtra": "From social media captions and blog posts to polished long-form content, I create work that connects with people and helps brands build a strong online presence.",
     "aboutImage": "assets/616d6724-dba3-40b2-a6bf-82e3ea0df06b.jpg",
@@ -48,9 +49,6 @@
     "name": "Maverick S. Moran",
     "role": "Programmer",
     "image": "assets/team-profile-img%20%281%29.png",
-    "heroTitle": "Maverick S. Moran",
-    "heroSubtitle": "Programmer",
-    "heroCopy": "Driven by continuous growth and learning, with a focus on building reliable and structured front-end implementations.",
     "about": "Driven by continuous growth and learning, with a focus on building reliable and structured front-end implementations.",
     "skills": ["Python", "HTML", "CSS"],
     "skillLinks": {
@@ -65,9 +63,6 @@
     "name": "Erika P. Bianan",
     "role": "Editor",
     "image": "assets/team-member-img.png",
-    "heroTitle": "Erika P. Bianan",
-    "heroSubtitle": "Editor",
-    "heroCopy": "Detail-oriented and focused on refining outputs to ensure clarity, consistency, and overall quality of the project.",
     "about": "Detail-oriented and focused on refining outputs to ensure clarity, consistency, and overall quality of the project.",
     "skills": ["JSON", "UI/UX"],
     "skillLinks": {
@@ -81,9 +76,6 @@
     "name": "Justin Luis C. Gamoso",
     "role": "Editor",
     "image": "assets/team-profile-img%20%282%29.png",
-    "heroTitle": "Justin Luis C. Gamoso",
-    "heroSubtitle": "Editor",
-    "heroCopy": "Provides direction and coordination for the team, ensuring smooth collaboration and steady progress throughout the project.",
     "about": "Provides direction and coordination for the team, ensuring smooth collaboration and steady progress throughout the project.",
     "skills": ["HTML"],
     "skillLinks": {
@@ -96,9 +88,6 @@
     "name": "Johnley T. Jugo",
     "role": "Editor",
     "image": "assets/team-profile-img%20%283%29.png",
-    "heroTitle": "Johnley T. Jugo",
-    "heroSubtitle": "Editor",
-    "heroCopy": "Dedicated to continuous learning and improvement, contributing to both the design and development aspects of the project.",
     "about": "Dedicated to continuous learning and improvement, contributing to both the design and development aspects of the project.",
     "skills": ["JavaScript", "UI/UX"],
     "skillLinks": {

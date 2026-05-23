@@ -1244,6 +1244,62 @@ testimonial-summary .section-title-wrap p {
   color: var(--muted);
 }
 
+.profile-simple {
+  max-width: 900px;
+}
+
+.profile-simple .profile-head {
+  display: flex;
+  align-items: center;
+  gap: 0.95rem;
+  margin: 2rem 0 1.1rem;
+}
+
+.profile-simple .profile-head img {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-simple h2 {
+  font-size: clamp(2rem, 3.8vw, 3rem);
+  margin: 0;
+  line-height: 1.05;
+}
+
+.profile-simple .role {
+  margin-top: 0.25rem;
+}
+
+.profile-simple .profile-block {
+  margin-top: 1.35rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.profile-simple .profile-block h3 {
+  font-size: 2rem;
+  margin-bottom: 0.55rem;
+}
+
+.profile-simple .skill-tags a,
+.profile-simple .skill-tags span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.65rem;
+  margin: 0 0.45rem 0.45rem 0;
+  border-radius: 3px;
+  background: #f0eadf;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
 .profile-head {
   display: flex;
   align-items: center;
