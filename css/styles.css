@@ -346,14 +346,14 @@ a {
   align-items: center;
 }
 
-..about-intro h1,
+.about-intro h1,
 .section-title-wrap h2 {
   font-family: "Cormorant Garamond", serif;
   font-size: clamp(3rem, 5vw, 4.5rem);
   line-height: 1.12;
   font-weight: 600;
-  color: #4a4a4a;
-  margin-bottom: 0.85rem;
+  color: #1e1a18;
+  margin-bottom: 1rem;
 }
 
 .about-intro p {
