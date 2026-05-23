@@ -1232,6 +1232,7 @@ testimonial-summary .section-title-wrap p {
 
 .profile-main {
   min-height: 62vh;
+  padding-top: 2rem;
 }
 
 .profile-box {
@@ -1244,14 +1245,18 @@ testimonial-summary .section-title-wrap p {
   color: var(--muted);
 }
 
-.profile-head {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  margin: 2.4rem 0 1.1rem;
+.profile-simple {
+  max-width: 900px;
 }
 
-.profile-head img {
+.profile-simple .profile-head {
+  display: flex;
+  align-items: center;
+  gap: 0.95rem;
+  margin: 2rem 0 1.1rem;
+}
+
+.profile-simple .profile-head img {
   width: 84px;
   height: 84px;
   border-radius: 50%;
@@ -1867,7 +1872,46 @@ testimonial-summary .section-title-wrap p {
 }
 
 .profile-block {
-  margin-top: 1.65rem;
+  padding: 1.8rem;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(30, 26, 24, 0.08);
+}
+
+.profile-block h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.45rem;
+  letter-spacing: -0.03em;
+}
+
+.profile-meta {
+  margin-top: 1rem;
+  color: #55463d;
+  font-weight: 700;
+}
+
+.profile-features {
+  display: grid;
+  gap: 1rem;
+}
+
+.profile-feature-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 1.15rem 1rem;
+  border: 1px solid rgba(30, 26, 24, 0.08);
+}
+
+.profile-feature-card h4 {
+  margin: 0 0 0.55rem;
+  font-size: 1rem;
+}
+
+.profile-feature-card p {
+  margin: 0;
+  color: #5d4f47;
+  line-height: 1.7;
 }
 
 .skill-tags {
@@ -1877,20 +1921,42 @@ testimonial-summary .section-title-wrap p {
   margin-top: 0.75rem;
 }
 
-.skill-tags span,
-.skill-tags a {
-  background: #f0eadf;
-  color: var(--accent);
-  padding: 0.4rem 0.65rem;
-  border-radius: 3px;
-  text-transform: uppercase;
-  font-size: 0.65rem;
+.skill-tags a,
+.skill-tags span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1rem;
+  margin: 0 0.5rem 0.5rem 0;
+  border-radius: 999px;
+  background: rgba(201, 176, 106, 0.12);
+  color: #4b3c33;
+  text-decoration: none;
   font-weight: 700;
+  font-size: 0.92rem;
 }
 
-.skill-tags a {
-  text-decoration: none;
-  display: inline-block;
+.profile-contact-card {
+  background: linear-gradient(180deg, rgba(246, 236, 224, 0.98), #fff 96%);
+}
+
+@media (max-width: 960px) {
+  .profile-hero,
+  .profile-about-grid,
+  .profile-why-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .profile-intro h1 {
+    font-size: 2rem;
+  }
+
+  .skill-tags a,
+  .skill-tags span {
+    margin-right: 0.4rem;
+  }
 }
 
 .cart-main,

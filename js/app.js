@@ -1764,39 +1764,125 @@ function renderMemberProfile() {
     return;
   }
 
-  // Simpler, original-style profile layout (name, role, about, skills, contribution)
-  const skillTagsMarkup = (member.skills || [])
-    .map((s) => `<span>${s.toUpperCase()}</span>`)
+  const skillTagsMarkup = member.skills
+    .map((skill) => {
+      const link = member.skillLinks && member.skillLinks[skill];
+      const isAnchor = typeof link === "string" && link.startsWith("#");
+      if (!link) {
+        return `<span>${skill}</span>`;
+      }
+      return `<a href="${link}" ${isAnchor ? "" : "target=\"_blank\" rel=\"noopener noreferrer\""}>${skill}</a>`;
+    })
+    .join("");
+
+  const simpleProfileIds = new Set(["maverick", "erika", "justin", "johnley"]);
+  if (simpleProfileIds.has(member.id)) {
+    wrap.innerHTML = `
+      <section class="profile-box profile-simple">
+        <a class="back-link" href="about.html">← Back to Team</a>
+
+        <div class="profile-head">
+          <img src="${member.image}" alt="${member.name}" />
+          <div>
+            <h2>${member.name}</h2>
+            <p class="role">${member.role}</p>
+          </div>
+        </div>
+
+        <div class="profile-block">
+          <h3>About</h3>
+          <p>${member.about}</p>
+        </div>
+
+        <div class="profile-block">
+          <h3>Skills</h3>
+          <div class="skill-tags">
+            ${skillTagsMarkup}
+          </div>
+        </div>
+
+        <div class="profile-block">
+          <h3>Project Contribution</h3>
+          <p>${member.contribution}</p>
+        </div>
+      </section>
+    `;
+    return;
+  }
+
+  const valuesMarkup = (member.values || [])
+    .map(
+      (value) => `
+        <article class="profile-feature-card">
+          <h4>${value.title}</h4>
+          <p>${value.description}</p>
+        </article>
+      `
+    )
     .join("");
 
   wrap.innerHTML = `
     <section class="profile-box">
       <a class="back-link" href="about.html">← Back to Team</a>
 
-      <div class="profile-hero simple-card">
-        <figure class="profile-figure small">
+      <div class="profile-hero card-surface">
+        <div class="profile-intro">
+          <p class="profile-eyebrow">Creating Digital Experiences</p>
+          <h1>${member.heroTitle || `Hi, I am ${member.name.split(" ")[0]}`}</h1>
+          <p class="profile-name">${member.name}</p>
+          <p class="profile-role-summary">${member.role}</p>
+          <p class="profile-lead">${member.heroSubtitle || "Aspiring Web and Mobile Developer · Content Creator · Editor"}</p>
+          <p class="profile-copy">${member.heroCopy || "I create beautiful, functional, and user-friendly digital experiences. Passionate about turning ideas into reality through clean code and innovative design."}</p>
+          <div class="profile-actions">
+            ${member.projectLink ? `<a class="profile-button" href="${member.projectLink}" target="_blank" rel="noopener noreferrer">View Projects</a>` : ""}
+            ${member.facebook ? `<a class="profile-button secondary" href="${member.facebook}" target="_blank" rel="noopener noreferrer">Contact Me</a>` : ""}
+          </div>
+        </div>
+        <figure class="profile-figure">
           <img src="${member.image}" alt="${member.name}" />
         </figure>
-        <div class="profile-intro simple">
-          <h1>${member.name}</h1>
-          <p class="profile-role-summary">${member.role}</p>
-        </div>
       </div>
 
-      <div class="profile-details simple-details">
-        <div class="profile-block">
-          <h3>About</h3>
-          <p>${member.about || "No biography available."}</p>
+      <div class="profile-details">
+        <div class="profile-block profile-about-grid">
+          <div class="profile-about-image">
+            <img src="${member.aboutImage || member.image}" alt="${member.name}" />
+          </div>
+          <div class="profile-about-copy">
+            <h3>Who I am</h3>
+            <p>${member.about || "I’m passionate about technology, creativity, and building digital ideas into real-world solutions."}</p>
+            <p>${member.aboutDetail || "I help beauty, lifestyle, and digital brands tell stories that feel authentic, trendy, and engaging through creative content and aesthetic visuals."}</p>
+            <p>${member.aboutExtra || "From social media captions and blog posts to polished long-form content, I create work that connects with people and helps brands build a strong online presence."}</p>
+          </div>
         </div>
 
-        <div class="profile-block">
-          <h3>Skills</h3>
-          <div class="skill-tags">${skillTagsMarkup}</div>
+        <div class="profile-block" id="skills">
+          <h3>Skills & Role</h3>
+          <div class="skill-tags">
+            ${skillTagsMarkup}
+          </div>
+          <p class="profile-meta"><strong>Role:</strong> ${member.role}</p>
         </div>
 
-        <div class="profile-block">
-          <h3>Project Contribution</h3>
-          <p>${member.contribution || "Contributed to the project."}</p>
+        <div class="profile-block profile-why-grid">
+          <div>
+            <h3>Why Choose Me</h3>
+            <div class="profile-features">
+              ${valuesMarkup}
+            </div>
+          </div>
+          <div class="profile-why-image">
+            <img src="${member.whyImage || member.aboutImage || member.image}" alt="Why choose me" />
+          </div>
+        </div>
+
+        <div class="profile-block profile-contact-card">
+          <h3>Let’s build something amazing together</h3>
+          <p>${member.contactCopy || "Whether you need a creative website, a modern mobile app, or a developer who genuinely cares about quality and user experience — I’d love to help bring your ideas to life."}</p>
+          <div class="profile-actions">
+            ${member.projectLink ? `<a class="profile-button" href="${member.projectLink}" target="_blank" rel="noopener noreferrer">View Projects</a>` : ""}
+            ${member.facebook ? `<a class="profile-button secondary" href="${member.facebook}" target="_blank" rel="noopener noreferrer">Message on Facebook</a>` : ""}
+          </div>
         </div>
       </div>
     </section>
