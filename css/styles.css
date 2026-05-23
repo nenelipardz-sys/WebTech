@@ -1247,7 +1247,6 @@ testimonial-summary .section-title-wrap p {
 
 .profile-simple {
   max-width: 900px;
-<<<<<<< HEAD
 }
 
 .profile-simple .profile-head {
@@ -1307,22 +1306,6 @@ testimonial-summary .section-title-wrap p {
   align-items: center;
   gap: 0.9rem;
   margin: 2.4rem 0 1.1rem;
-=======
->>>>>>> 5b0bf49a0e2247132f80f0beb8945f138d7cbd54
-}
-
-.profile-simple .profile-head {
-  display: flex;
-  align-items: center;
-  gap: 0.95rem;
-  margin: 2rem 0 1.1rem;
-}
-
-.profile-simple .profile-head img {
-  width: 84px;
-  height: 84px;
-  border-radius: 50%;
-  object-fit: cover;
 }
 
 .profile-head h2 a {
