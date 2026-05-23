@@ -48,6 +48,9 @@
     "name": "Maverick S. Moran",
     "role": "Programmer",
     "image": "assets/team-profile-img%20%281%29.png",
+    "heroTitle": "Maverick S. Moran",
+    "heroSubtitle": "Programmer",
+    "heroCopy": "Driven by continuous growth and learning, with a focus on building reliable and structured front-end implementations.",
     "about": "Driven by continuous growth and learning, with a focus on building reliable and structured front-end implementations.",
     "skills": ["Python", "HTML", "CSS"],
     "skillLinks": {
@@ -62,6 +65,9 @@
     "name": "Erika P. Bianan",
     "role": "Editor",
     "image": "assets/team-member-img.png",
+    "heroTitle": "Erika P. Bianan",
+    "heroSubtitle": "Editor",
+    "heroCopy": "Detail-oriented and focused on refining outputs to ensure clarity, consistency, and overall quality of the project.",
     "about": "Detail-oriented and focused on refining outputs to ensure clarity, consistency, and overall quality of the project.",
     "skills": ["JSON", "UI/UX"],
     "skillLinks": {
@@ -75,6 +81,9 @@
     "name": "Justin Luis C. Gamoso",
     "role": "Editor",
     "image": "assets/team-profile-img%20%282%29.png",
+    "heroTitle": "Justin Luis C. Gamoso",
+    "heroSubtitle": "Editor",
+    "heroCopy": "Provides direction and coordination for the team, ensuring smooth collaboration and steady progress throughout the project.",
     "about": "Provides direction and coordination for the team, ensuring smooth collaboration and steady progress throughout the project.",
     "skills": ["HTML"],
     "skillLinks": {
@@ -87,6 +96,9 @@
     "name": "Johnley T. Jugo",
     "role": "Editor",
     "image": "assets/team-profile-img%20%283%29.png",
+    "heroTitle": "Johnley T. Jugo",
+    "heroSubtitle": "Editor",
+    "heroCopy": "Dedicated to continuous learning and improvement, contributing to both the design and development aspects of the project.",
     "about": "Dedicated to continuous learning and improvement, contributing to both the design and development aspects of the project.",
     "skills": ["JavaScript", "UI/UX"],
     "skillLinks": {
