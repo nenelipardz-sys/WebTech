@@ -208,12 +208,6 @@ function logoutUser() {
   state.user = null;
   saveStorage(STORAGE.auth, null);
   
-  // Clear cart and orders when logging out
-  state.cart = [];
-  state.orders = [];
-  saveStorage(STORAGE.cart, []);
-  saveStorage(STORAGE.orders, []);
-  
   // Update UI immediately
   renderAuthAction();
   updateCountBadges();
@@ -1569,8 +1563,36 @@ function renderOrdersPage() {
     return;
   }
 
-  // Filter orders to only show current user's orders
-  const userOrders = state.orders.filter(order => order.userEmail === state.user?.email);
+  if (!isAuthenticated()) {
+    redirectToSignin("orders.html");
+    return;
+  }
+
+  const activeEmail = String(state.user?.email || "").trim().toLowerCase();
+  if (!activeEmail) {
+    list.innerHTML = "<p>No orders yet. Start shopping to place your first order.</p>";
+    return;
+  }
+
+  // Migrate legacy orders that were created before userEmail was stored.
+  let migrated = false;
+  state.orders = state.orders.map((order) => {
+    if (!order.userEmail) {
+      migrated = true;
+      return {
+        ...order,
+        userEmail: activeEmail
+      };
+    }
+    return order;
+  });
+
+  if (migrated) {
+    saveStorage(STORAGE.orders, state.orders);
+  }
+
+  // Filter orders to only show current user's orders (case-insensitive).
+  const userOrders = state.orders.filter((order) => String(order.userEmail || "").trim().toLowerCase() === activeEmail);
 
   if (userOrders.length === 0) {
     list.innerHTML = "<p>No orders yet. Start shopping to place your first order.</p>";
@@ -1872,6 +1894,43 @@ function renderMemberProfile() {
       return `<a href="${link}" ${isAnchor ? "" : "target=\"_blank\" rel=\"noopener noreferrer\""}>${skill}</a>`;
     })
     .join("");
+
+  if (member.id === "maverick") {
+    wrap.innerHTML = `
+      <section class="profile-box profile-simple maverick-showcase">
+        <a class="back-link" href="about.html">← Back to Team</a>
+
+        <article class="maverick-hero-card">
+          <div class="maverick-copy">
+            <p class="maverick-kicker">${member.role}</p>
+            <h2>${member.name}</h2>
+            <h3>About</h3>
+            <p>${member.about}</p>
+
+            <h3>Project Contribution</h3>
+            <p>${member.contribution}</p>
+
+            <h3>Skills</h3>
+            <div class="skill-tags">
+              ${skillTagsMarkup}
+            </div>
+          </div>
+
+          <div class="maverick-media">
+            <div class="maverick-portrait-ring">
+              <img src="${member.image}" alt="${member.name}" />
+            </div>
+
+            <div class="maverick-socials" aria-label="Maverick social links">
+              ${member.facebook ? `<a class="maverick-social-link" href="${member.facebook}" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8.5h2V5h-2.5C10.9 5 10 6 10 7.4V9H8v3h2v7h3v-7h2.3l.7-3H13V7.7c0-.4.3-.7 1-.7Z" /></svg></a>` : ""}
+              ${member.instagram ? `<a class="maverick-social-link" href="${member.instagram}" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="15" height="15" rx="4" ry="4" fill="none" stroke="currentColor" stroke-width="1.8" /><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8" /><circle cx="17" cy="7" r="1.2" /></svg></a>` : ""}
+            </div>
+          </div>
+        </article>
+      </section>
+    `;
+    return;
+  }
 
   const simpleProfileIds = new Set(["maverick", "erika", "justin", "johnley"]);
   if (simpleProfileIds.has(member.id)) {
