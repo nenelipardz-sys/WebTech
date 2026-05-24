@@ -377,11 +377,13 @@ a {
   background-size: cover;
   background-position: center 42%;
   background-repeat: no-repeat;
-  min-height: 560px;
+  min-height: 100vh;
+  height: 100vh;
 }
 
 .hero-overlay {
-  min-height: 560px;
+  min-height: 100vh;
+  height: 100vh;
   display: flex;
   align-items: center;
 }
