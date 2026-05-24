@@ -97,6 +97,100 @@ function renderAuthAction() {
   }
 }
 
+function getFooterSocialIcon(type) {
+  if (type === "facebook") {
+    return `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M14 8.5h2V5h-2.5C10.9 5 10 6 10 7.4V9H8v3h2v7h3v-7h2.3l.7-3H13V7.7c0-.4.3-.7 1-.7Z" />
+      </svg>
+    `;
+  }
+
+  if (type === "instagram") {
+    return `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="4.5" y="4.5" width="15" height="15" rx="4" ry="4" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8" />
+        <circle cx="17" cy="7" r="1.2" />
+      </svg>
+    `;
+  }
+
+  return `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M14.1 4.2v8.2a4.9 4.9 0 1 1-4.2-4.8v3.1a1.9 1.9 0 1 0 1.8 1.9V4.2h2.4c.5 2 2 3.6 4 4v2.8a6.8 6.8 0 0 1-4-1.6V4.2Z" />
+    </svg>
+  `;
+}
+
+function renderFooter() {
+  document.querySelectorAll(".site-footer").forEach((footer) => {
+    if (footer.dataset.footerEnhanced === "true") {
+      return;
+    }
+
+    footer.dataset.footerEnhanced = "true";
+    footer.innerHTML = `
+      <div class="container footer-grid">
+        <div class="footer-brand-column">
+          <a class="brand footer-brand" href="index.html" aria-label="Rizze Home"><img class="footer-logo" src="assets/logo%20(1).png" alt="Rizze logo" /></a>
+          <p class="footer-lead">Timeless beauty, redefined. Premium skincare and makeup for effortless sophistication.</p>
+        </div>
+        <div class="footer-column">
+          <h4>Shop</h4>
+          <a href="products.html">All Products</a>
+          <a href="products-skincare.html">Skincare</a>
+          <a href="products-makeup.html">Makeup</a>
+          <a href="products-fragrance.html">Fragrance</a>
+        </div>
+        <div class="footer-column">
+          <h4>Company</h4>
+          <a href="about.html">About us</a>
+          <a class="footer-contact-link" href="mailto:arizzalipardz@gmail.com">arizzalipardz@gmail.com</a>
+          <div class="footer-socials" aria-label="Social links">
+            <a class="social-button" href="https://www.facebook.com/share/1FiXc5muPx/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+              ${getFooterSocialIcon("facebook")}
+            </a>
+            <a class="social-button" href="https://www.instagram.com/ariszxa7_?igsh=Zm0yZDlvMW8wZXVr&utm_source=qr" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              ${getFooterSocialIcon("instagram")}
+            </a>
+            <a class="social-button" href="https://www.tiktok.com/@arizzavillareal?_r=1&_t=ZS-96csPN35tqu" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+              ${getFooterSocialIcon("tiktok")}
+            </a>
+          </div>
+        </div>
+        <div class="footer-column footer-feature">
+          <h4>Get the App</h4>
+          <p>Stay close to the latest drops, offers, and beauty tips.</p>
+          <div class="store-badges" aria-label="Download badges">
+            <div class="store-badge">
+              <span class="store-kicker">Get it on</span>
+              <strong>Google Play</strong>
+            </div>
+            <div class="store-badge">
+              <span class="store-kicker">Download on the</span>
+              <strong>App Store</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-payments" aria-label="Accepted payment methods">
+        <span class="payment-badge payment-amex">AMEX</span>
+        <span class="payment-badge payment-apple">Apple Pay</span>
+        <span class="payment-badge payment-bancontact">Bancontact</span>
+        <span class="payment-badge payment-diners">Diners</span>
+        <span class="payment-badge payment-discover">Discover</span>
+        <span class="payment-badge payment-gpay">G Pay</span>
+        <span class="payment-badge payment-ideal">iDEAL</span>
+        <span class="payment-badge payment-mastercard">Mastercard</span>
+        <span class="payment-badge payment-shoppay">Shop Pay</span>
+        <span class="payment-badge payment-visa">VISA</span>
+      </div>
+      <div class="copyright">© 2026 Rizzé Beauty. All rights reserved. Crafted with elegance.</div>
+    `;
+  });
+}
+
 // Save signed-in user info to state and localStorage, then refresh nav UI.
 function setAuthenticatedUser(user) {
   state.user = {
@@ -225,6 +319,7 @@ async function init() {
   await ensureTeam();
 
   updateCountBadges();
+  renderFooter();
   renderAuthAction();
 
   if (page === "home") {

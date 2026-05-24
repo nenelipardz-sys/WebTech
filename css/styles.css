@@ -1228,8 +1228,9 @@ testimonial-summary .section-title-wrap p {
 
 .footer-logo {
   display: block;
-  height: 34px;
+  height: 52px;
   width: auto;
+  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.22));
 }
 
 .profile-main {
@@ -2388,37 +2389,242 @@ aside.checkout-side {
 }
 
 .site-footer {
+  position: relative;
+  overflow: hidden;
+  margin-top: 2rem;
   background: #eceae7;
   border-top: 1px solid var(--line);
-  margin-top: 2rem;
+  color: var(--text);
 }
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.2fr 0.6fr 0.6fr 1fr;
-  gap: 1rem;
-  padding: 3.1rem 0 2.1rem;
+  grid-template-columns: 1.15fr 0.75fr 0.9fr 1.05fr;
+  gap: 1.5rem;
+  padding: 3.2rem 0 2rem;
+}
+
+.footer-brand-column,
+.footer-column,
+.footer-feature {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-payments {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  width: 100%;
+  overflow: hidden;
+  margin-left: auto;
+  padding: 0.1rem 0 1.05rem;
+}
+
+.footer-brand-column {
+  gap: 0.85rem;
 }
 
 .footer-brand {
-  display: inline-block;
-  margin-bottom: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-bottom: 0.15rem;
+}
+
+.footer-lead {
+  max-width: 20rem;
+  color: var(--muted);
 }
 
 .site-footer h4 {
   color: var(--accent);
   text-transform: uppercase;
-  font-size: 0.86rem;
-  margin-bottom: 0.55rem;
+  letter-spacing: 0.14em;
+  font-size: 0.78rem;
+  margin-bottom: 0.8rem;
   font-family: "Manrope", sans-serif;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .site-footer a {
-  display: block;
+  display: inline-flex;
+  width: fit-content;
   text-decoration: none;
   margin-bottom: 0.55rem;
   color: #716d69;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.site-footer a:hover {
+  color: var(--text);
+  transform: translateX(2px);
+}
+
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.1rem;
+}
+
+.footer-contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.footer-contact-link::before {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 5px rgba(201, 176, 106, 0.14);
+  flex: none;
+}
+
+.footer-socials {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.social-button {
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--accent);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.08);
+}
+
+.social-button:hover {
+  transform: translateY(-2px);
+  background: #faf8f5;
+}
+
+.social-button svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: currentColor;
+}
+
+.store-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+}
+
+.store-badge {
+  width: fit-content;
+  min-width: 195px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.12rem;
+  padding: 0.82rem 1rem;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--text);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+}
+
+.store-badge strong {
+  font-size: 1rem;
+  line-height: 1.1;
+}
+
+.store-kicker {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.payment-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  width: 100%;
+  align-items: center;
+}
+
+.payment-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.38rem 0.6rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: #3a332f;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.06);
+}
+
+.payment-amex {
+  background: #1d6fda;
+  color: #fff;
+}
+
+.payment-apple {
+  background: #111111;
+  color: #fff;
+}
+
+.payment-bancontact {
+  background: #f4c400;
+  color: #181818;
+}
+
+.payment-diners {
+  background: #0d5aa4;
+  color: #fff;
+}
+
+.payment-discover {
+  background: #f06a24;
+  color: #fff;
+}
+
+.payment-gpay {
+  background: #ffffff;
+  color: #1f1f1f;
+}
+
+.payment-ideal {
+  background: #ff4a96;
+  color: #fff;
+}
+
+.payment-mastercard {
+  background: linear-gradient(90deg, #eb001b 0 50%, #f79e1b 50% 100%);
+  color: #fff;
+}
+
+.payment-shoppay {
+  background: #5a31f4;
+  color: #fff;
+}
+
+.payment-visa {
+  background: #142688;
+  color: #fff;
 }
 
 .newsletter-form {
@@ -2446,8 +2652,8 @@ aside.checkout-side {
 .copyright {
   border-top: 1px solid var(--line);
   text-align: center;
-  padding: 0.72rem;
-  font-size: 0.75rem;
+  padding: 0.9rem 1rem 1rem;
+  font-size: 0.78rem;
   color: #8c877f;
 }
 
