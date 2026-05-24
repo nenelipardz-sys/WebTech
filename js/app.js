@@ -1623,13 +1623,17 @@ function renderProfilePage() {
   const cancelButton = document.getElementById("profile-cancel-edit");
   const signoutButton = document.getElementById("profile-signout");
 
-  if (!account || !list || !title || !cancelButton || !signoutButton) {
+  if (!account || !list || !title || !cancelButton) {
     return;
   }
 
   if (!isAuthenticated()) {
     window.location.href = "login.html?redirect=profile.html";
     return;
+  }
+
+  if (signoutButton) {
+    signoutButton.setAttribute("aria-disabled", "true");
   }
 
   const profile = getProfileRecord();
@@ -1666,7 +1670,6 @@ function renderProfilePage() {
 
   title.textContent = "Add address";
   cancelButton.textContent = "Cancel";
-  signoutButton.onclick = () => logoutUser();
 }
 
 // Set up profile page interactions.

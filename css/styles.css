@@ -1624,6 +1624,12 @@ testimonial-summary .section-title-wrap p {
   flex-wrap: wrap;
 }
 
+.profile-action-static {
+  cursor: default;
+  pointer-events: none;
+  user-select: none;
+}
+
 .profile-summary-card,
 .profile-card {
   padding: 1.35rem 1.5rem;
