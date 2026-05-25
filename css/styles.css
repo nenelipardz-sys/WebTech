@@ -1250,6 +1250,52 @@ body[data-member-id="maverick"] .maverick-showcase {
   margin-inline: auto;
 }
 
+body[data-member-id="maverick"] .maverick-spotlight {
+  position: relative;
+  margin: 1rem auto 0.95rem;
+  width: fit-content;
+  max-width: min(92%, 28rem);
+  padding: 1rem 1.35rem 0.9rem;
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(255, 251, 243, 0.96), rgba(245, 236, 222, 0.92));
+  border: 1px solid rgba(201, 176, 106, 0.26);
+  color: #1f1712;
+  text-align: center;
+  font-size: clamp(1.2rem, 2.8vw, 2.3rem);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  line-height: 0.9;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+  box-shadow: 0 18px 38px rgba(30, 26, 24, 0.12);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+body[data-member-id="maverick"] .maverick-spotlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top center, rgba(255, 255, 255, 0.8), transparent 58%);
+  pointer-events: none;
+}
+
+body[data-member-id="maverick"] .maverick-spotlight span {
+  position: relative;
+  display: block;
+}
+
+body[data-member-id="maverick"] .maverick-spotlight span:not(:last-child) {
+  color: #2a211b;
+}
+
+body[data-member-id="maverick"] .maverick-spotlight span:last-child {
+  color: var(--accent);
+  margin-top: 0.08rem;
+  font-size: 1.04em;
+  letter-spacing: 0.04em;
+}
+
 body[data-member-id="maverick"] .maverick-hero-card {
   margin-top: 1rem;
   margin-inline: auto;
@@ -1337,32 +1383,46 @@ body[data-member-id="maverick"] .maverick-portrait-ring img {
 
 body[data-member-id="maverick"] .maverick-socials {
   display: flex;
-  gap: 0.6rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-top: 0.35rem;
 }
 
 body[data-member-id="maverick"] .maverick-social-link {
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 3rem;
+  height: 3rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  border: 1px solid rgba(30, 26, 24, 0.16);
-  background: #fff;
-  color: var(--accent);
+  border: none;
+  box-shadow: 0 10px 18px rgba(30, 26, 24, 0.16);
   text-decoration: none;
-  transition: transform 0.22s ease, background 0.22s ease;
+  transition: transform 0.22s ease, filter 0.22s ease;
 }
 
 body[data-member-id="maverick"] .maverick-social-link:hover {
   transform: translateY(-2px) scale(1.05);
-  background: #f5efe7;
+  box-shadow: 0 12px 22px rgba(30, 26, 24, 0.18);
 }
 
 body[data-member-id="maverick"] .maverick-social-link svg {
-  width: 1rem;
-  height: 1rem;
+  width: 1.28rem;
+  height: 1.28rem;
   fill: currentColor;
+}
+
+body[data-member-id="maverick"] .maverick-social-link:first-child {
+  background: linear-gradient(180deg, #fffaf4 0%, #f3eadc 100%);
+  border: 1px solid rgba(201, 176, 106, 0.28);
+  color: var(--accent);
+}
+
+body[data-member-id="maverick"] .maverick-social-link.maverick-instagram {
+  background: linear-gradient(180deg, #fffaf4 0%, #efe3d0 100%);
+  border: 1px solid rgba(201, 176, 106, 0.28);
+  color: var(--accent);
 }
 
 @media (max-width: 900px) {

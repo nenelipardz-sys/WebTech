@@ -1900,6 +1900,13 @@ function renderMemberProfile() {
       <section class="profile-box profile-simple maverick-showcase">
         <a class="back-link" href="about.html">← Back to Team</a>
 
+        <p class="maverick-spotlight">
+          <span>I HELP</span>
+          <span>CLINICS</span>
+          <span>SUCCEED WITH</span>
+          <span>HIGHLEVEL.</span>
+        </p>
+
         <article class="maverick-hero-card">
           <div class="maverick-copy">
             <p class="maverick-kicker">${member.role}</p>
@@ -1922,8 +1929,18 @@ function renderMemberProfile() {
             </div>
 
             <div class="maverick-socials" aria-label="Maverick social links">
-              ${member.facebook ? `<a class="maverick-social-link" href="${member.facebook}" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8.5h2V5h-2.5C10.9 5 10 6 10 7.4V9H8v3h2v7h3v-7h2.3l.7-3H13V7.7c0-.4.3-.7 1-.7Z" /></svg></a>` : ""}
-              ${member.instagram ? `<a class="maverick-social-link" href="${member.instagram}" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="15" height="15" rx="4" ry="4" fill="none" stroke="currentColor" stroke-width="1.8" /><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8" /><circle cx="17" cy="7" r="1.2" /></svg></a>` : ""}
+              <a class="maverick-social-link maverick-facebook" href="${member.facebook}" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M14 8.5h2V5h-2.5C10.9 5 10 6 10 7.4V9H8v3h2v7h3v-7h2.3l.7-3H13V7.7c0-.4.3-.7 1-.7Z" />
+                </svg>
+              </a>
+              <a class="maverick-social-link maverick-instagram" href="${member.instagram}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="4.5" y="4.5" width="15" height="15" rx="4" ry="4" fill="none" stroke="currentColor" stroke-width="1.8" />
+                  <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8" />
+                  <circle cx="17" cy="7" r="1.2" />
+                </svg>
+              </a>
             </div>
           </div>
         </article>
