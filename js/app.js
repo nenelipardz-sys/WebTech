@@ -1907,6 +1907,10 @@ function renderMemberProfile() {
           <span>HIGHLEVEL.</span>
         </p>
 
+        <div class="maverick-actions" role="group" aria-label="Maverick quick actions">
+          <a class="maverick-action" href="services.html">Services</a>
+          <a class="maverick-action" href="about.html#hire">Hire Me</a>
+        </div>
         <article class="maverick-hero-card">
           <div class="maverick-copy">
             <p class="maverick-kicker">${member.role}</p>
@@ -1929,12 +1933,12 @@ function renderMemberProfile() {
             </div>
 
             <div class="maverick-socials" aria-label="Maverick social links">
-              <a class="maverick-social-link maverick-facebook" href="${member.facebook}" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+              <a class="maverick-social-link maverick-facebook" href="https://www.facebook.com/share/1F2v6wYQNP/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M14 8.5h2V5h-2.5C10.9 5 10 6 10 7.4V9H8v3h2v7h3v-7h2.3l.7-3H13V7.7c0-.4.3-.7 1-.7Z" />
                 </svg>
               </a>
-              <a class="maverick-social-link maverick-instagram" href="${member.instagram}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <a class="maverick-social-link maverick-instagram" href="https://www.instagram.com/eight.mvr?igsh=MXAzd3dub244cW5kYQ==" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <rect x="4.5" y="4.5" width="15" height="15" rx="4" ry="4" fill="none" stroke="currentColor" stroke-width="1.8" />
                   <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8" />
